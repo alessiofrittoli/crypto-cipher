@@ -1,0 +1,30 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"noEmit": true,
+		"noImplicitAny": true,
+		"esModuleInterop": true,
+		"strictNullChecks": true,
+		"declaration": true,
+		"isolatedModules": true,
+		"outDir": "dist",
+		"target": "ES2020",
+		"lib": [ "dom", "dom.iterable", "esnext" ],
+		"allowJs": true,
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"skipLibCheck": true,
+		"downlevelIteration": true,
+		"noUncheckedIndexedAccess": true,
+		"strictPropertyInitialization": false,
+		"resolveJsonModule": true,
+		"jsx": "preserve",
+		"incremental": true,
+		"tsBuildInfoFile": ".tsbuildinfo",
+		"paths": {
+			"@/*": [ "./src/*" ]
+		}
+	},
+	"include": [ "src", "__tests__" ],
+	"exclude": [ "node_modules", "dist" ]
+}

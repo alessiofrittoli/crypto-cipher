@@ -1,0 +1,23 @@
+{
+	"configurations": [
+		{
+			"type": "node",
+			"name": "Debug Tests",
+			"request": "launch",
+			"args": [
+				"test",
+				"--",
+				"--runInBand",
+				"--watchAll=false",
+				"--testNamePattern",
+				"${jest.testNamePattern}",
+				"--runTestsByPath",
+				"${jest.testFile}"
+			],
+			"console": "integratedTerminal",
+			"internalConsoleOptions": "neverOpen",
+			"disableOptimisticBPs": true,
+			"runtimeExecutable": "pnpm"
+		}
+	]
+}

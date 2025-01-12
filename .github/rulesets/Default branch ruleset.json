@@ -2,7 +2,7 @@
 	"name": "Default branch ruleset",
 	"target": "branch",
 	"source_type": "Repository",
-	"source": "alessiofrittoli/node-module-starter",
+	"source": "alessiofrittoli/crypto-cipher",
 	"enforcement": "active",
 	"conditions": {
 		"ref_name": {

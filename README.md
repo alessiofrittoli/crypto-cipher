@@ -1,16 +1,16 @@
-# Node Module Starter 🛠️
+# Crypto Cipher 🔐
 
 [![NPM Latest Version][version-badge]][npm-url] [![Coverage Status][coverage-badge]][coverage-url] [![NPM Monthly Downloads][downloads-badge]][npm-url] [![Dependencies][deps-badge]][deps-url]
 
-[version-badge]: https://img.shields.io/npm/v/%40alessiofrittoli%2Fnode-module-starter
-[npm-url]: https://npmjs.org/package/%40alessiofrittoli%2Fnode-module-starter
-[coverage-badge]: https://coveralls.io/repos/github/alessiofrittoli/node-module-starter/badge.svg
-[coverage-url]: https://coveralls.io/github/alessiofrittoli/node-module-starter
-[downloads-badge]: https://img.shields.io/npm/dm/%40alessiofrittoli%2Fnode-module-starter.svg
-[deps-badge]: https://img.shields.io/librariesio/release/npm/%40alessiofrittoli%2Fnode-module-starter
-[deps-url]: https://libraries.io/npm/%40alessiofrittoli%2Fnode-module-starter
+[version-badge]: https://img.shields.io/npm/v/%40alessiofrittoli%2Fcrypto-cipher
+[npm-url]: https://npmjs.org/package/%40alessiofrittoli%2Fcrypto-cipher
+[coverage-badge]: https://coveralls.io/repos/github/alessiofrittoli/crypto-cipher/badge.svg
+[coverage-url]: https://coveralls.io/github/alessiofrittoli/crypto-cipher
+[downloads-badge]: https://img.shields.io/npm/dm/%40alessiofrittoli%2Fcrypto-cipher.svg
+[deps-badge]: https://img.shields.io/librariesio/release/npm/%40alessiofrittoli%2Fcrypto-cipher
+[deps-url]: https://libraries.io/npm/%40alessiofrittoli%2Fcrypto-cipher
 
-## Starter repository for developing node_modules
+## Node.js Cipher cryptograph utility library
 
 ### Table of Contents
 
@@ -24,36 +24,18 @@
 
 ---
 
-### Getting started (delete once cloned in your project)
+### Getting started
 
-Run the following command to start using `node-module-starter` for your projects:
-
-```bash
-git clone git@github.com:alessiofrittoli/node-module-starter.git && git remote remove origin
-```
-
-install dependencies
+Run the following command to start using `crypto-cipher` in your projects:
 
 ```bash
-pnpm i
-```
-
-Read the [Creating a repository from a template - GitHub Docs](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template) for more in-detail informations about creating a new Repository from a template using GitHub web interface.
-
----
-
-### Getting started (customize based on your project needs)
-
-Run the following command to start using `{package_name}` in your projects:
-
-```bash
-npm i {package_name}
+npm i @alessiofrittoli/crypto-cipher
 ```
 
 or using `pnpm`
 
 ```bash
-pnpm i {package_name}
+pnpm i @alessiofrittoli/crypto-cipher
 ```
 
 ---

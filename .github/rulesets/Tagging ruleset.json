@@ -2,7 +2,7 @@
 	"name": "Tagging ruleset",
 	"target": "tag",
 	"source_type": "Repository",
-	"source": "alessiofrittoli/node-module-starter",
+	"source": "alessiofrittoli/crypto-cipher",
 	"enforcement": "active",
 	"conditions": {
 		"ref_name": {

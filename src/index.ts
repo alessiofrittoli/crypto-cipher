@@ -70,7 +70,7 @@ export class Cipher
 	
 	
 	/**
-	 * Cipher default `Additional Authentication Data` lengths.
+	 * Cipher default `Additional Authenticated Data` lengths.
 	 */
 	static readonly AAD_LENGTH = {
 		min		: 16,
@@ -192,7 +192,7 @@ export class Cipher
 			)
 		}
 
-		const AADLength		= _options.aad
+		const AADLength		= _options.aadLength
 		const authTagLength	= _options.authTag
 		const AAD			= _data.subarray( 0, AADLength )
 		_data				= _data.subarray( AADLength )
@@ -559,7 +559,7 @@ export class Cipher
 		const salt		= crypto.randomBytes( _options.salt )
 		const Key		= crypto.scryptSync( _secret, salt, _options.length )
 		const IV		= crypto.randomBytes( _options.iv )
-		const AAD		= crypto.scryptSync( Key, salt, _options.aad )
+		const AAD		= _options.aad || crypto.scryptSync( Key, salt, _options.aadLength )
 
 		return { options: _options, Key, IV, AAD, salt }
 	}
@@ -575,13 +575,20 @@ export class Cipher
 		T extends Cph.ResolvedOptions = Cph.ResolvedOptions
 	>( options: Cph.Options = {} ): T
 	{
-		const _options		= { ...options } as T
+		const _options = { ...options } as T
+
+		if ( _options.aad ) {
+			_options.aad = coerceToUint8Array( _options.aad )
+		}
+
 		_options.salt		||= Cipher.SALT_LENGTH.default
 		_options.authTag	||= Cipher.AUTH_TAG_LENGTH.default
-		_options.aad		||= Cipher.AAD_LENGTH.default
+		_options.aadLength	= _options.aad?.length || _options.aadLength || Cipher.AAD_LENGTH.default
 		_options.salt		= Math.min( Math.max( _options.salt, Cipher.SALT_LENGTH.min ), Cipher.SALT_LENGTH.max )
 		_options.authTag	= Math.min( Math.max( _options.authTag, Cipher.AUTH_TAG_LENGTH.min ), Cipher.AUTH_TAG_LENGTH.max )
-		_options.aad		= Math.min( Math.max( _options.aad, Cipher.AAD_LENGTH.min ), Cipher.AAD_LENGTH.max )
+		if ( ! _options.aad ) {
+			_options.aadLength	= Math.min( Math.max( _options.aadLength, Cipher.AAD_LENGTH.min ), Cipher.AAD_LENGTH.max )
+		}
 
 		const { keyLength, algorithm } = Cipher.getKeyLength( options.algorithm )
 

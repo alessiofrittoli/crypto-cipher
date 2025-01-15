@@ -1,3 +1,4 @@
+import { CoerceToUint8ArrayInput } from '@alessiofrittoli/crypto-buffer'
 import type crypto from 'crypto'
 import type { Readable, Writable } from 'stream'
 
@@ -28,8 +29,10 @@ export namespace Cph
 		iv?: number
 		/** The `authTag` length. Minimum: `4`, Maximum: `16`. Default: `16`. */
 		authTag?: number
+		/** Custom `Additional Authenticated Data`. */
+		aad?: CoerceToUint8ArrayInput
 		/** The `AAD` length. Minimum: `16`, Maximum: `4096`. Default: `32`. */
-		aad?: number
+		aadLength?: number
 	}
 
 
@@ -38,10 +41,11 @@ export namespace Cph
 	 */
 	export interface ResolvedOptions<
 		T extends Cph.AesAlgorithm = Cph.AesAlgorithm
-	> extends Required<Cph.Options<T>>
+	> extends Required<Omit<Cph.Options<T>, 'aad'>>
 	{
 		/** The symmetric key length. */
 		length: number
+		aad?: Uint8Array
 	}
 
 

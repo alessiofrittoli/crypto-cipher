@@ -1,4 +1,4 @@
-import { bufferEquals } from '@alessiofrittoli/crypto-buffer/common'
+import { bufferEquals } from '@alessiofrittoli/crypto-buffer'
 import { Cipher } from '@/index'
 
 describe( 'Cipher - In-Memory Buffer Symmetric Encryption/Decryption', () => {

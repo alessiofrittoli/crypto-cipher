@@ -32,13 +32,25 @@
 	"files": [
 		"dist"
 	],
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js"
+		},
+		"./types": {
+			"types": "./dist/types.d.ts",
+			"import": "./dist/types.mjs",
+			"require": "./dist/types.js"
+		}
+	},
 	"sideEffects": false,
 	"scripts": {
 		"build": "pnpm lint && pnpm test:ci && tsup",
 		"build:watch": "tsup --watch",
 		"lint": "eslint",
-		"release": "node scripts/publish.js --verbose",
-		"test": "pnpm test:watch",
+		"release": "node scripts/publish.js --verbose --npm",
+		"test": "jest",
 		"test:watch": "jest --watchAll --verbose",
 		"test:ci": "jest --ci --verbose",
 		"test:coverage": "pnpm test:watch --coverage",
@@ -46,14 +58,20 @@
 		"test:serve-coverage": "http-server ./coverage/lcov-report --gzip true -p 0 -o --silent",
 		"test:coverage:serve": "concurrently --prefix none --kill-others \"pnpm test:coverage\" \"pnpm test:serve-coverage\"",
 		"test:jest": "pnpm test:watch jest.test.ts",
-		"test:jest:jsdom": "JSDOM=true pnpm test:jest"
+		"test:jest:jsdom": "JSDOM=true pnpm test:jest",
+		"test:buffer-in-memory": "pnpm test:watch buffer-in-memory.test.ts",
+		"test:file-symmetric": "pnpm test:watch file-symmetric.test.ts",
+		"test:file-hybrid": "pnpm test:watch file-hybrid.test.ts",
+		"test:stream-symmetric": "pnpm test:watch stream-symmetric.test.ts",
+		"test:stream-hybrid": "pnpm test:watch stream-hybrid.test.ts",
+		"test:misc": "pnpm test:watch misc.test.ts"
 	},
 	"devDependencies": {
 		"@alessiofrittoli/node-scripts": "^2.2.1",
 		"@eslint/js": "^9.18.0",
 		"@jest/globals": "^29.7.0",
 		"@types/jest": "^29.5.14",
-		"@types/node": "^22.10.5",
+		"@types/node": "^22.10.6",
 		"concurrently": "^9.1.2",
 		"dotenv": "^16.4.7",
 		"eslint": "^9.18.0",
@@ -65,6 +83,9 @@
 		"ts-node": "^10.9.2",
 		"tsup": "^8.3.5",
 		"typescript": "^5.7.3",
-		"typescript-eslint": "^8.19.1"
+		"typescript-eslint": "^8.20.0"
+	},
+	"dependencies": {
+		"@alessiofrittoli/crypto-buffer": "^3.2.0"
 	}
 }

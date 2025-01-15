@@ -1,6 +1,19 @@
 import type { JestConfigWithTsJest } from 'ts-jest'
 import dotenv from 'dotenv'
 
+console.log(
+`
+________________________________________
+       _______       __             
+      / ____(_)___  / /_  ___  _____
+     / /   / / __ \\/ __ \\/ _ \\/ ___/
+    / /___/ / /_/ / / / /  __/ /    
+    \\____/_/ .___/_/ /_/\\___/_/     
+          /_/                       
+________________________________________
+`
+)
+
 const env		= process.env.NODE_ENV
 const testEnv	= process.env.JSDOM === 'true' ? 'jest-environment-jsdom' : 'node'
 

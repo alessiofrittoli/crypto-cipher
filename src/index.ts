@@ -74,7 +74,7 @@ export class Cipher
 	 */
 	static readonly AAD_LENGTH = {
 		min		: 16,
-		max		: 4096,
+		max		: 128,
 		default	: 32,
 	} as const
 	
@@ -102,7 +102,7 @@ export class Cipher
 	/**
 	 * Encrypt in-memory data buffer.
 	 *
-	 * ⚠️ This is not suitable for large data. Use {@link Cipher.streamEncrypt()} or {@link Cipher.hybridEncrypt()} method instead.
+	 * ⚠️ This is not suitable for large data. Use {@link Cipher.streamEncrypt()} or {@link Cipher.hybridEncrypt()} methods for large data encryption.
 	 *
 	 * @param	data	The data to encrypt.
 	 * @param	secret	The secret key used to encrypt the `data`.
@@ -158,7 +158,7 @@ export class Cipher
 	/**
 	 * Decrypt in-memory data buffer.
 	 *
-	 * ⚠️ This is not suitable for large data. Use {@link Cipher.streamDecrypt()} or {@link Cipher.hybridDecrypt()} method instead.
+	 * ⚠️ This is not suitable for large data. Use {@link Cipher.streamDecrypt()} or {@link Cipher.hybridDecrypt()} methods for large data decryption.
 	 *
 	 * @param	data	The data to decrypt.
 	 * @param	secret	The secret key used to decrypt the `data`.
@@ -321,7 +321,7 @@ export class Cipher
 	static hybridEncrypt(
 		secret		: CoerceToUint8ArrayInput,
 		publicKey	: crypto.RsaPublicKey | crypto.RsaPrivateKey | crypto.KeyLike,
-		options		: Cph.Stream.Symmetric.EncryptOptions,
+		options		: Cph.Stream.Hybrid.EncryptOptions,
 	)
 	{
 		options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
@@ -329,7 +329,7 @@ export class Cipher
 		const {
 			Key, IV,
 			options: { algorithm, input, output },
-		} = Cipher.newKeyIV<Cph.Stream.Symmetric.EncryptResolvedOptions>( secret, options )
+		} = Cipher.newKeyIV<Cph.Stream.Hybrid.EncryptResolvedOptions>( secret, options )
 
 		const encryptedKey = (
 			crypto.publicEncrypt( publicKey, Buffer.concat( [ Key, IV ] ) )

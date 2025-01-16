@@ -89,7 +89,7 @@ pnpm i @alessiofrittoli/crypto-cipher
 
 #### Constants
 
-##### `SALT_LENGTH`
+##### `Cipher.SALT_LENGTH`
 
 Defines the minimum, maximum, and default lengths for salt.
 
@@ -106,7 +106,7 @@ Defines the minimum, maximum, and default lengths for salt.
 
 ---
 
-##### `IV_LENGTH`
+##### `Cipher.IV_LENGTH`
 
 Defines the minimum, maximum, and default lengths for initialization vectors (IV).
 
@@ -123,7 +123,7 @@ Defines the minimum, maximum, and default lengths for initialization vectors (IV
 
 ---
 
-##### `AUTH_TAG_LENGTH`
+##### `Cipher.AUTH_TAG_LENGTH`
 
 Defines the minimum, maximum, and default lengths for authentication tags.
 
@@ -140,7 +140,7 @@ Defines the minimum, maximum, and default lengths for authentication tags.
 
 ---
 
-##### `AAD_LENGTH`
+##### `Cipher.AAD_LENGTH`
 
 Defines the minimum, maximum, and default lengths for additional authenticated data (AAD).
 
@@ -157,23 +157,23 @@ Defines the minimum, maximum, and default lengths for additional authenticated d
 
 ---
 
-##### `DEFAULT_ALGORITHM`
+##### `Cipher.DEFAULT_ALGORITHM`
 
 Specifies default AES algorithms for buffer and stream operations.
 
 <details>
 <summary>Properties</summary>
 
-| Operation  | Algorithm    |
-|------------|--------------|
-| `buffer`   | `aes-256-gcm` |
-| `stream`   | `aes-256-cbc` |
+| Operation  | Algorithm    | Description |
+|------------|--------------|-------------|
+| `buffer`   | `aes-256-gcm` | Default algorithm used for buffer data encryption/decryption |
+| `stream`   | `aes-256-cbc` | Default algorithm used for stream encryption/decryption |
 
 </details>
 
 ---
 
-##### `ALGORITHMS`
+##### `Cipher.ALGORITHMS`
 
 Supported AES algorithms:
 
@@ -308,7 +308,7 @@ Type: `Promise<void>`
 ---
 
 - See [`CoerceToUint8ArrayInput`](#coercetouint8arrayinput) for more informations about supported input data types.
-- See [`Cph.Stream.Symmetric.EncryptOptions`](#cphstreamsymmetricencryptoptions) for more informations about additional encryption options.
+- See [`Cph.Stream.Symmetric.EncryptOptions`](#cphstreamsymmetricencryptoptions) for more informations about encryption options.
 - See [In-memory data stream encryption/decryption](#in-memory-data-stream-encryptiondecryption) examples.
 - See [File based data stream encryption/decryption](#file-based-data-stream-encryptiondecryption) examples.
 
@@ -344,7 +344,7 @@ Type: `Promise<void>`
 ---
 
 - See [`CoerceToUint8ArrayInput`](#coercetouint8arrayinput) for more informations about supported input data types.
-- See [`Cph.Stream.Symmetric.DecryptOptions`](#cphstreamsymmetricdecryptoptions) for more informations about additional decryption options.
+- See [`Cph.Stream.Symmetric.DecryptOptions`](#cphstreamsymmetricdecryptoptions) for more informations about decryption options.
 - See [In-memory data stream encryption/decryption](#in-memory-data-stream-encryptiondecryption) examples.
 - See [File based data stream encryption/decryption](#file-based-data-stream-encryptiondecryption) examples.
 
@@ -381,7 +381,7 @@ Type: `Promise<void>`
 ---
 
 - See [`CoerceToUint8ArrayInput`](#coercetouint8arrayinput) for more informations about supported input data types.
-- See [`Cph.Stream.Hybrid.EncryptOptions`](#cphstreamhybridencryptoptions) for more informations about additional encryption options.
+- See [`Cph.Stream.Hybrid.EncryptOptions`](#cphstreamhybridencryptoptions) for more informations about encryption options.
 - See [In-memory data stream with hybrid encryption/decryption](#in-memory-data-stream-with-hybrid-encryptiondecryption) examples.
 - See [File based data stream with hybrid encryption/decryption](#file-based-data-stream-with-hybrid-encryptiondecryption) examples.
 
@@ -432,13 +432,13 @@ This module supports different input data types and it uses the [`coerceToUint8A
 
 ---
 
-##### `CBCTypes`
+##### `Cph.CBCTypes`
 
 Cipher CBC algorithm types.
 
 ---
 
-##### `AesAlgorithm`
+##### `Cph.AesAlgorithm`
 
 Supported AES algorithm types.
 
@@ -452,9 +452,9 @@ Common options in encryption/decryption processes.
 
 <summary>Type parameters</summary>
 
-| Parameter   | Default        | Description |
-|-------------|----------------|-------------|
-| `T`         | `AesAlgorithm` | Accepted algorithm in `Cph.Options`. This is usefull to constraint specifc algorithms. |
+| Parameter | Default        | Description |
+|-----------|----------------|-------------|
+| `T`       | `Cph.AesAlgorithm` | Accepted algorithm in `Cph.Options`. This is usefull to constraint specifc algorithms. |
 
 </details>
 
@@ -923,21 +923,19 @@ Run all the defined test suites by running the following:
 # Run tests and watch file changes.
 pnpm test:watch
 
-# Run tests and watch file changes with jest-environment-jsdom.
-pnpm test:jsdom
-
 # Run tests in a CI environment.
 pnpm test:ci
-
-# Run tests in a CI environment with jest-environment-jsdom.
-pnpm test:ci:jsdom
 ```
 
 You can eventually run specific suits like so:
 
 ```bash
-pnpm test:jest
-pnpm test:jest:jsdom
+pnpm test:buffer-in-memory
+pnpm test:file-symmetric
+pnpm test:file-hybrid
+pnpm test:stream-symmetric
+pnpm test:stream-hybrid
+pnpm test:misc
 ```
 
 Run tests with coverage.

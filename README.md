@@ -923,21 +923,19 @@ Run all the defined test suites by running the following:
 # Run tests and watch file changes.
 pnpm test:watch
 
-# Run tests and watch file changes with jest-environment-jsdom.
-pnpm test:jsdom
-
 # Run tests in a CI environment.
 pnpm test:ci
-
-# Run tests in a CI environment with jest-environment-jsdom.
-pnpm test:ci:jsdom
 ```
 
 You can eventually run specific suits like so:
 
 ```bash
-pnpm test:jest
-pnpm test:jest:jsdom
+pnpm test:buffer-in-memory
+pnpm test:file-symmetric
+pnpm test:file-hybrid
+pnpm test:stream-symmetric
+pnpm test:stream-hybrid
+pnpm test:misc
 ```
 
 Run tests with coverage.

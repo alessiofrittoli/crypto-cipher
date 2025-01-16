@@ -21,7 +21,7 @@ export namespace Cph
 	 */
 	export interface Options<T extends Cph.AesAlgorithm = Cph.AesAlgorithm>
 	{
-		/** The Cipher algorithm to use. Default: `aes-256-gcm`. */
+		/** The Cipher algorithm to use. Default: `aes-256-gcm` | `aes-256-cbc`. */
 		algorithm?: T
 		/** The salt length. Minimum: `16`, Maximum: `64`. Default: `32`. */
 		salt?: number
@@ -31,7 +31,7 @@ export namespace Cph
 		authTag?: number
 		/** Custom `Additional Authenticated Data`. */
 		aad?: CoerceToUint8ArrayInput
-		/** The `AAD` length. Minimum: `16`, Maximum: `4096`. Default: `32`. */
+		/** The `AAD` length. Minimum: `16`, Maximum: `128`. Default: `32`. */
 		aadLength?: number
 	}
 
@@ -98,6 +98,18 @@ export namespace Cph
 
 		export namespace Hybrid
 		{
+			/**
+			 * Alias for {@link Cph.Stream.Symmetric.EncryptOptions}
+			 */
+			export type EncryptOptions = Cph.Stream.Symmetric.EncryptOptions
+
+
+			/**
+			 * Alias for {@link Cph.Stream.Symmetric.EncryptResolvedOptions}
+			 */
+			export type EncryptResolvedOptions = Cph.Stream.Symmetric.EncryptResolvedOptions
+
+
 			/**
 			 * Options for decrypting a stream.
 			 */

@@ -24,8 +24,10 @@ const encryptMockData = ( secret: CoerceToUint8ArrayInput, data: CoerceToUint8Ar
 		}
 	} )
 
+	const { encrypt } = Cipher.streamEncrypt( secret, { input, output } )
+
 	return (
-		Cipher.streamEncrypt( secret, { input, output } )
+		encrypt()
 			.then( () => Buffer.concat( encryptedChunks ) )
 	)
 
@@ -82,9 +84,10 @@ describe( 'Cipher.streamDecrypt()', () => {
 			},
 		} )
 
-		await Cipher.streamDecrypt(
+		const { decrypt } = await Cipher.streamDecrypt(
 			password, { input, output }
 		)
+		await decrypt()
 	
 		const decrypted = Buffer.concat( chunks )
 
@@ -115,9 +118,11 @@ describe( 'Cipher.streamDecrypt()', () => {
 			},
 		} )
 
-		await Cipher.streamDecrypt(
+		const { decrypt: decrypt2 } = await Cipher.streamDecrypt(
 			password, { input: input2, output: output2 }
 		)
+		
+		await decrypt2()
 	
 		const decrypted2 = Buffer.concat( chunks2 )
 

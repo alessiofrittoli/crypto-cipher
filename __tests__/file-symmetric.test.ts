@@ -46,7 +46,9 @@ describe( 'Cipher - File Based Stream Symmetric Encryption/Decryption', () => {
 		// output where encrypted data is written
 		const output = fs.createWriteStream( encryptedPath )
 		// encrypt
-		await Cipher.streamEncrypt( password, { input, output } )
+		const { encrypt } = Cipher.streamEncrypt( password, { input, output } )
+
+		await encrypt()
 
 		const encrypted = fs.readFileSync( encryptedPath )
 		
@@ -61,8 +63,10 @@ describe( 'Cipher - File Based Stream Symmetric Encryption/Decryption', () => {
 		// output where decrypted data is written
 		const output = fs.createWriteStream( decryptedPath )
 		// decrypt
-		await Cipher.streamDecrypt( password, { input, output } )
+		const { decrypt } = await Cipher.streamDecrypt( password, { input, output } )
 
+		await decrypt()
+		
 		const decrypted = fs.readFileSync( decryptedPath )
 		
 		expect( bufferEquals( decrypted, Buffer.from( dataToEncrypt ) ) )

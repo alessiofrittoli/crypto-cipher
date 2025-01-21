@@ -12,12 +12,10 @@ import type { Cph } from './types'
  */
 interface StreamEncryptOptions
 {
-	Key			: crypto.CipherKey
-	IV			: crypto.BinaryLike
+	cipher		: crypto.Cipher
 	encryptedKey: Buffer
 	input		: Readable
 	output		: Writable
-	algorithm	: Cph.CBCTypes
 }
 
 
@@ -26,11 +24,9 @@ interface StreamEncryptOptions
  */
 interface StreamDecryptOptions
 {
-	KeyIV		: Buffer
-	length		: number
+	decipher	: crypto.Decipher
 	input		: Readable
 	output		: Writable
-	algorithm	: Cph.CBCTypes
 }
 
 
@@ -249,13 +245,15 @@ export class Cipher
 		const encryptedKey = (
 			Cipher.encrypt( Buffer.concat( [ Key, IV ] ), secret, { algorithm, salt, iv, authTag } )
 		)
-		
-		return (
+
+		const cipher = crypto.createCipheriv( algorithm, Key, IV )
+		const encrypt = () => (
 			Cipher.stream( {
-				Key, IV, input, output, encryptedKey, algorithm
+				cipher, input, output, encryptedKey
 			} )
 		)
 
+		return { cipher, encrypt }
 	}
 
 
@@ -286,7 +284,7 @@ export class Cipher
 
 		return (
 			Cipher.extractKeyIV( input, keyIvLength )
-				.then( ( [ encryptedKeyIV, input ] ) => {					
+				.then( ( [ encryptedKeyIV, input ] ) => {
 					/**
 					 * Check if input has error and re-throw if so.
 					 * This is required since `.on( 'error' )` listeners attached in
@@ -297,12 +295,18 @@ export class Cipher
 					const KeyIV = (
 						Cipher.decrypt( encryptedKeyIV, secret, { algorithm, salt, iv, authTag } )
 					)
-					
-					return (
+
+					const Key		= KeyIV.subarray( 0, length )
+					const IV		= KeyIV.subarray( length )
+					const decipher	= crypto.createDecipheriv( algorithm, Key, IV )
+	
+					const decrypt = () => (
 						Cipher.decipherStream(
-							{ KeyIV, length, input, output, algorithm }
+							{ decipher, input, output }
 						)
 					)
+			
+					return { decipher, decrypt }
 				} )
 		)
 	}
@@ -335,11 +339,14 @@ export class Cipher
 			crypto.publicEncrypt( publicKey, Buffer.concat( [ Key, IV ] ) )
 		)
 
-		return (
+		const cipher = crypto.createCipheriv( algorithm, Key, IV )
+		const encrypt = () => (
 			Cipher.stream( {
-				Key, IV, input, output, encryptedKey, algorithm
+				cipher, input, output, encryptedKey
 			} )
 		)
+
+		return { cipher, encrypt }
 	}
 
 
@@ -373,13 +380,18 @@ export class Cipher
 					 */
 					if ( input.errored ) throw input.errored
 
-					const KeyIV = crypto.privateDecrypt( privateKey, encryptedKeyIV )
-					
-					return (
+					const KeyIV		= crypto.privateDecrypt( privateKey, encryptedKeyIV )
+					const Key		= KeyIV.subarray( 0, length )
+					const IV		= KeyIV.subarray( length )
+					const decipher	= crypto.createDecipheriv( algorithm, Key, IV )
+	
+					const decrypt = () => (
 						Cipher.decipherStream(
-							{ KeyIV, length, input, output, algorithm }
+							{ decipher, input, output }
 						)
 					)
+			
+					return { decipher, decrypt }
 				} )
 		)
 	}
@@ -394,19 +406,17 @@ export class Cipher
 	private static stream( options: StreamEncryptOptions )
 	{
 		const {
-			Key, IV, encryptedKey,
-			input, output, algorithm,
+			cipher, encryptedKey,
+			input, output
 		} = options
 
 		return (
 			new Promise<void>( ( resolve, reject ) => {
-				const cipher = crypto.createCipheriv( algorithm, Key, IV )
-
 				cipher.on( 'error', reject )
 				input.on( 'error', reject )
 				output.on( 'error', reject )
 				output.on( 'finish', resolve )
-
+		
 				output.write( encryptedKey )
 				input.pipe( cipher ).pipe( output )
 			} )
@@ -423,15 +433,11 @@ export class Cipher
 	private static decipherStream( options: StreamDecryptOptions )
 	{
 		const {
-			KeyIV, length, algorithm, input, output,
+			decipher, input, output,
 		} = options
 
 		return (
 			new Promise<void>( ( resolve, reject ) => {
-				const Key		= KeyIV.subarray( 0, length )
-				const IV		= KeyIV.subarray( length )
-				const decipher	= crypto.createDecipheriv( algorithm, Key, IV )
-
 				decipher.on( 'error', reject )
 				input.on( 'error', reject )
 				output.on( 'error', reject )

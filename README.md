@@ -299,9 +299,11 @@ Encrypts a `Readable` stream to a `Writable` stream.
 
 <summary>Returns</summary>
 
-Type: `Promise<void>`
+Type: `Cph.Stream.Symmetric.EncryptReturnType`
 
-- A new Promise that resolves when the stream encryption is complete.
+- An object containing:
+  - a new instance of `crypto.Cipher` allowing you to add listeners to the `cipher` encryption process.
+  - the actual `encrypt` callback that must be called and awaited in order to start the encryption process.
 
 </details>
 
@@ -335,9 +337,11 @@ Decrypts a `Readable` stream to a `Writable` stream.
 
 <summary>Returns</summary>
 
-Type: `Promise<void>`
+Type: `Promise<Cph.Stream.Symmetric.DecryptReturnType>`
 
-- A new Promise that resolves when the stream decryption is complete.
+- A new Promise that resolves when Key IV extraction completes returning an object containing:
+  - a new instance of `crypto.Decipher` allowing you to add listeners to the `decipher` decryption process.
+  - the actual `decrypt` callback that must be called and awaited in order to start the decryption process.
 
 </details>
 
@@ -372,9 +376,11 @@ Encrypts a stream using hybrid encryption (symmetric + RSA).
 
 <summary>Returns</summary>
 
-Type: `Promise<void>`
+Type: `Cph.Stream.Hybrid.EncryptReturnType`
 
-- A new Promise that resolves when hybrid encryption is complete.
+- An object containing:
+  - a new instance of `cipher` allowing you to add listeners to the `cipher` encryption process.
+  - the actual `encrypt` callback that must be called and awaited to start the encryption process.
 
 </details>
 
@@ -408,9 +414,11 @@ Decrypts a stream using hybrid decryption (symmetric + RSA).
 
 <summary>Returns</summary>
 
-Type: `Promise<void>`
+Type: `Promise<Cph.Stream.Hybrid.DecryptReturnType>`
 
-- A new Promise that resolves when hybrid decryption is complete.
+- A new Promise that resolves when Key IV extraction completes returning an object containing:
+  - a new instance of `crypto.Decipher` allowing you to add listeners to the `decipher` decryption process.
+  - the actual `decrypt` callback that must be called and awaited in order to start the decryption process.
 
 </details>
 
@@ -496,6 +504,23 @@ Stream symmetric encryption options.
 
 ---
 
+##### `Cph.Stream.Symmetric.EncryptReturnType`
+
+Returnign object from `Cipher.streamEncrypt()` method.
+
+<details>
+
+<summary>Properties</summary>
+
+| Property | Type     | Description |
+|----------|----------|-------------|
+| `cipher`  | `crypto.Cipher` | The `crypto.Cipher` instance. |
+| `encrypt` | `() => Promise<void>` | The actual `encrypt` callback that must be called and awaited in order to start the encryption process. |
+
+</details>
+
+---
+
 ##### `Cph.Stream.Symmetric.DecryptOptions`
 
 Stream symmetric decryption options.
@@ -515,11 +540,36 @@ Stream symmetric decryption options.
 
 ---
 
+##### `Cph.Stream.Symmetric.DecryptReturnType`
+
+Returnign object from awaited `Cipher.streamDecrypt()` method.
+
+<details>
+
+<summary>Properties</summary>
+
+| Property | Type     | Description |
+|----------|----------|-------------|
+| `decipher` | `crypto.Decipher` | The `crypto.Decipher` instance. |
+| `decrypt` | `() => Promise<void>` | The actual `decrypt` callback that must be called and awaited in order to start the decryption process. |
+
+</details>
+
+---
+
 ##### `Cph.Stream.Hybrid.EncryptOptions`
 
 Stream hybrid encryption options.
 
 - Alias for [`Cph.Stream.Symmetric.EncryptOptions`](#cphstreamsymmetricencryptoptions)
+
+---
+
+##### `Cph.Stream.Hybrid.EncryptReturnType`
+
+Returnign object from `Cipher.hybridEncrypt()` method.
+
+- Alias for [`Cph.Stream.Symmetric.EncryptReturnType`](#cphstreamsymmetricencryptreturntype)
 
 ---
 
@@ -538,6 +588,14 @@ Stream hybrid decryption options.
 | `rsaKeyLength` | `number` | The RSA key length in bytes used while encrypting data. This is used to properly extract the encrypted Cipher Key and Initialization Vector from the encrypted data. |
 
 </details>
+
+---
+
+##### `Cph.Stream.Hybrid.DecryptReturnType`
+
+Returnign object from awaited `Cipher.hybridDecrypt()` method.
+
+- Alias for [`Cph.Stream.Symmetric.DecryptReturnType`](#cphstreamsymmetricdecryptreturntype)
 
 ---
 
@@ -609,6 +667,7 @@ const routeHandler = () => {
   } )
   
   Cipher.streamEncrypt( password, { input, output } )
+    .encrypt()
   
   return (
     // encrypted stream
@@ -664,7 +723,9 @@ const routeHandler = () => (
         },
       } )
       
-      Cipher.streamDecrypt( password, { input, output } )
+      const { decrypt } = await Cipher.streamDecrypt( password, { input, output } )
+
+      decrypt()
       
       return (
         // decrypted stream
@@ -729,12 +790,13 @@ const output = new Writable( {
   }
 } )
 
-await Cipher.hybridEncrypt( password, {
+const { encrypt } = Cipher.hybridEncrypt( password, {
   key       : keyPair.publicKey,
   padding   : crypto.constants.RSA_PKCS1_OAEP_PADDING,
   oaepHash  : 'SHA-256',
 }, { input, output } )
 
+await encrypt()
 ```
 
 ---
@@ -762,7 +824,7 @@ const output = new Writable( {
   },
 } )
 
-await Cipher.hybridDecrypt(
+const { decrypt } = await Cipher.hybridDecrypt(
   {
     key       : keyPair.privateKey,
     passphrase: password, // optional passhrase (required if set while generating keypair).
@@ -770,6 +832,8 @@ await Cipher.hybridDecrypt(
     oaepHash  : 'SHA-256',
   }, { input, output, rsaKeyLength }
 )
+
+await decrypt()
 
 console.log( Buffer.concat( chunks ).toString() ) // Outputs: 'my top-secret data'
 ```
@@ -793,6 +857,7 @@ const input = fs.createReadStream( 'my-very-large-top-secret-file.pdf' )
 const output = fs.createWriteStream( 'my-very-large-top-secret-file.encrypted' )
 // encrypt
 await Cipher.streamEncrypt( password, { input, output } )
+  .encrypt()
 ```
 
 ---
@@ -809,7 +874,8 @@ const input = fs.createReadStream( 'my-very-large-top-secret-file.encrypted' )
 // output where decrypted data is written
 const output = fs.createWriteStream( 'my-very-large-top-secret-file-decrypted.pdf' )
 // decrypt
-await Cipher.streamDecrypt( password, { input, output } )
+const { decrypt } = await Cipher.streamDecrypt( password, { input, output } )
+await decrypt()
 ```
 
 ---
@@ -852,11 +918,12 @@ const input = fs.createReadStream( 'my-very-large-top-secret-file.pdf' )
 // output where encrypted data is written
 const output = fs.createWriteStream( 'my-very-large-top-secret-file.encrypted' )
 // encrypt
-await Cipher.hybridEncrypt( password, {
+const { encrypt } = Cipher.hybridEncrypt( password, {
   key       : keyPair.publicKey,
   padding   : crypto.constants.RSA_PKCS1_OAEP_PADDING,
   oaepHash  : 'SHA-256',
 }, { input, output } )
+await encrypt()
 ```
 
 ---
@@ -873,7 +940,7 @@ const input = fs.createReadStream( 'my-very-large-top-secret-file.encrypted' )
 // output where decrypted data is written
 const output = fs.createWriteStream( 'my-very-large-top-secret-file-decrypted.pdf' )
 // decrypt
-await Cipher.hybridDecrypt(
+const { decrypt } = await Cipher.hybridDecrypt(
   {
     key       : keyPair.privateKey,
     passphrase: password, // optional passhrase (required if set while generating keypair).

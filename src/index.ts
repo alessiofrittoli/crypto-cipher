@@ -229,12 +229,14 @@ export class Cipher
 	 * 
 	 * @param	secret	The secret key used to encrypt the `data`.
 	 * @param	options Additional options.
-	 * @returns A new Promise that resolves `void` once stream is completed.
+	 * @returns An object containing:
+	 * 	- a new instance of `crypto.Cipher` allowing you to add listeners to the `cipher` encryption process.
+	 * 	- the actual `encrypt` callback that must be called and awaited in order to start the encryption process.
 	 */
 	static streamEncrypt(
 		secret	: CoerceToUint8ArrayInput,
 		options	: Cph.Stream.Symmetric.EncryptOptions,
-	)
+	): Cph.Stream.Symmetric.EncryptReturnType
 	{
 		options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
 
@@ -264,12 +266,14 @@ export class Cipher
 	 * 
 	 * @param	secret	The secret key used to encrypt the `data`.
 	 * @param	options Additional options.
-	 * @returns A new Promise that resolves `void` once stream is completed.
+	 * @returns A new Promise that resolves when Key IV extraction completes returning an object containing:
+	 * 	- a new instance of `crypto.Decipher` allowing you to add listeners to the `decipher` decryption process.
+	 * 	- the actual `decrypt` callback that must be called and awaited in order to start the decryption process.
 	 */
 	static streamDecrypt(
 		secret	: CoerceToUint8ArrayInput,
 		options	: Cph.Stream.Symmetric.DecryptOptions,
-	)
+	): Promise<Cph.Stream.Symmetric.DecryptReturnType>
 	{
 		options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
 
@@ -320,13 +324,15 @@ export class Cipher
 	 * @param	secret		The secret key used to encrypt the stream.
 	 * @param	publicKey	The RSA public key used to encrypt the symmetric key.
 	 * @param	options		Options for the stream encryption.
-	 * @returns	A new Promise that resolves `void` once stream is completed.
+	 * @returns An object containing:
+	 * 	- a new instance of `crypto.Cipher` allowing you to add listeners to the `cipher` encryption process.
+	 * 	- the actual `encrypt` callback that must be called and awaited in order to start the encryption process.
 	 */
 	static hybridEncrypt(
 		secret		: CoerceToUint8ArrayInput,
 		publicKey	: crypto.RsaPublicKey | crypto.RsaPrivateKey | crypto.KeyLike,
 		options		: Cph.Stream.Hybrid.EncryptOptions,
-	)
+	): Cph.Stream.Hybrid.EncryptReturnType
 	{
 		options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
 
@@ -357,12 +363,14 @@ export class Cipher
 	 *
 	 * @param	privateKey	The RSA private key used to decrypt the symmetric key.
 	 * @param	options		Options for the stream decryption.
-	 * @returns	A new Promise that resolves `void` once stream is completed.
+	 * @returns A new Promise that resolves when Key IV extraction completes returning an object containing:
+	 * 	- a new instance of `crypto.Decipher` allowing you to add listeners to the `decipher` decryption process.
+	 * 	- the actual `decrypt` callback that must be called and awaited in order to start the decryption process.
 	 */
 	static hybridDecrypt(
 		privateKey	: crypto.RsaPrivateKey | crypto.KeyLike,
 		options		: Cph.Stream.Hybrid.DecryptOptions,
-	)
+	): Promise<Cph.Stream.Hybrid.DecryptReturnType>
 	{
 		options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
 
@@ -373,13 +381,6 @@ export class Cipher
 		return (
 			Cipher.extractKeyIV( input, rsaKeyLength )
 				.then( ( [ encryptedKeyIV, input ] ) => {
-					/**
-					 * Check if input has error and re-throw if so.
-					 * This is required since `.on( 'error' )` listeners attached in
-					 * `Cipher.decipherStream()` get attached too late (error event already emitted).
-					 */
-					if ( input.errored ) throw input.errored
-
 					const KeyIV		= crypto.privateDecrypt( privateKey, encryptedKeyIV )
 					const Key		= KeyIV.subarray( 0, length )
 					const IV		= KeyIV.subarray( length )

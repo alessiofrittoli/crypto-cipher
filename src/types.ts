@@ -75,6 +75,18 @@ export namespace Cph
 
 
 			/**
+			 * Returnign object from `Cipher.encryptStream()` method.
+			 */
+			export interface EncryptReturnType
+			{
+				/** The `crypto.Cipher` instance. */
+				cipher: crypto.Cipher
+				/** The actual `encrypt` callback that must be called and awaited in order to start the encryption process. */
+				encrypt	: () => Promise<void>
+			}
+
+
+			/**
 			 * Options for decrypting a stream (symmetric).
 			 */
 			export interface DecryptOptions extends Cph.Stream.Symmetric.EncryptOptions
@@ -93,6 +105,15 @@ export namespace Cph
 				Cph.ResolvedOptions
 				& Required<Cph.Stream.Symmetric.DecryptOptions>
 			)
+
+
+			export interface DecryptReturnType
+			{
+				/** The `crypto.Decipher` instance. */
+				decipher: crypto.Decipher
+				/** The actual `decrypt` callback that must be called and awaited in order to start the decryption process. */
+				decrypt	: () => Promise<void>
+			}
 		}
 
 
@@ -127,6 +148,18 @@ export namespace Cph
 				Cph.ResolvedOptions
 				& Required<Cph.Stream.Hybrid.DecryptOptions>
 			)
+
+
+			/**
+			 * Alias for {@link Cph.Stream.Symmetric.EncryptReturnType}
+			 */
+			export type EncryptReturnType = Cph.Stream.Symmetric.EncryptReturnType
+
+
+			/**
+			 * Alias for {@link Cph.Stream.Symmetric.DecryptReturnType}
+			 */
+			export type DecryptReturnType = Cph.Stream.Symmetric.DecryptReturnType
 		}
 	}
 }

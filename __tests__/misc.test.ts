@@ -2,6 +2,9 @@ import { Readable, Writable } from 'stream'
 import type { CoerceToUint8ArrayInput } from '@alessiofrittoli/crypto-buffer'
 import { Cipher } from '@/index'
 
+const dataToEncrypt	= 'my TOP-SECRET message'
+const password		= 'verystrong-password'
+
 
 const encryptMockData = ( secret: CoerceToUint8ArrayInput, data: CoerceToUint8ArrayInput ) => {
 	const encryptedChunks: Buffer[] = []
@@ -24,18 +27,58 @@ const encryptMockData = ( secret: CoerceToUint8ArrayInput, data: CoerceToUint8Ar
 		}
 	} )
 
+	const { encrypt } = Cipher.streamEncrypt( secret, { input, output } )
+
 	return (
-		Cipher.streamEncrypt( secret, { input, output } )
+		encrypt()
 			.then( () => Buffer.concat( encryptedChunks ) )
 	)
 
 }
 
+describe( 'Cipher.resolveOptions()', () => {
+
+	it( 'return resolved default options', () => {
+		const options = Cipher.resolveOptions()
+		expect( options.algorithm ).toBe( Cipher.DEFAULT_ALGORITHM.buffer )
+		expect( options.salt ).toBe( Cipher.SALT_LENGTH.default )
+		expect( options.iv ).toBe( Cipher.IV_LENGTH.default )
+		expect( options.authTag ).toBe( Cipher.AUTH_TAG_LENGTH.default )
+		expect( options.aadLength ).toBe( Cipher.AAD_LENGTH.default )
+	} )
+
+} )
+
+
+describe( 'Cipher.newKeyIV()', () => {
+
+	it( 'generates a new Key and IV with default options', () => {
+		const { options, Key, IV, AAD, salt } = Cipher.newKeyIV( password )
+		expect( options.algorithm ).toBe( Cipher.DEFAULT_ALGORITHM.buffer )
+		expect( options.salt ).toBe( Cipher.SALT_LENGTH.default )
+		expect( options.iv ).toBe( Cipher.IV_LENGTH.default )
+		expect( options.authTag ).toBe( Cipher.AUTH_TAG_LENGTH.default )
+		expect( options.aadLength ).toBe( Cipher.AAD_LENGTH.default )
+		expect( Key ).toBeInstanceOf( Buffer )
+		expect( IV ).toBeInstanceOf( Buffer )
+		expect( AAD ).toBeInstanceOf( Buffer )
+		expect( salt ).toBeInstanceOf( Buffer )
+	} )
+
+} )
+
+
+describe( 'Cipher.getIVLength()', () => {
+
+	it( 'returns the Initialization Vector length using default options', () => {
+		expect( Cipher[ 'getIVLength' ]() )
+			.toBe( 16 )
+	} )
+
+} )
+
 
 describe( 'Cipher.streamDecrypt()', () => {
-
-	const dataToEncrypt	= 'my TOP-SECRET message'
-	const password		= 'verystrong-password'
 
 	/**
 	 * Mixed chunk content check is skipped when the `Readable` pushes chunks with a chunk length that
@@ -82,9 +125,10 @@ describe( 'Cipher.streamDecrypt()', () => {
 			},
 		} )
 
-		await Cipher.streamDecrypt(
+		const { decrypt } = await Cipher.streamDecrypt(
 			password, { input, output }
 		)
+		await decrypt()
 	
 		const decrypted = Buffer.concat( chunks )
 
@@ -115,9 +159,11 @@ describe( 'Cipher.streamDecrypt()', () => {
 			},
 		} )
 
-		await Cipher.streamDecrypt(
+		const { decrypt: decrypt2 } = await Cipher.streamDecrypt(
 			password, { input: input2, output: output2 }
 		)
+		
+		await decrypt2()
 	
 		const decrypted2 = Buffer.concat( chunks2 )
 
@@ -214,6 +260,7 @@ describe( 'Cipher.streamDecrypt()', () => {
 
 	} )
 
+	
 	it( 'throws an error when trying to decrypt corrupted data', async () => {
 		
 		const encrypted = await encryptMockData( password, dataToEncrypt )
@@ -242,7 +289,9 @@ describe( 'Cipher.streamDecrypt()', () => {
 			},
 		} )
 
-		expect( () => Cipher.streamDecrypt( password, { input, output } ) )
+		const { decrypt } = await Cipher.streamDecrypt( password, { input, output } )
+
+		expect( () => decrypt() )
 			.rejects.toThrow( 'error:1C80006B:Provider routines::wrong final block length' )
 
 	} )

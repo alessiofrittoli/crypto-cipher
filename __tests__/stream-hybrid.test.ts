@@ -37,11 +37,13 @@ describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
 			}
 		} )
 	
-		await Cipher.hybridEncrypt( password, {
+		const { encrypt } =  Cipher.hybridEncrypt( password, {
 			key			: keyPair.publicKey,
 			padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
 			oaepHash	: 'SHA-256',
 		}, { input, output } )
+
+		await encrypt()
 	
 		const encryptedResult = Buffer.concat( encryptedChunks )
 		
@@ -75,7 +77,7 @@ describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
 			},
 		} )
 	
-		await Cipher.hybridDecrypt(
+		const { decrypt } = await Cipher.hybridDecrypt(
 			{
 				key			: keyPair.privateKey,
 				passphrase	: password,
@@ -83,7 +85,9 @@ describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
 				oaepHash	: 'SHA-256',
 			}, { input, output, rsaKeyLength: rsaBytes }
 		)
-	
+
+		await decrypt()
+
 		const decrypted = Buffer.concat( chunks )
 
 		expect( decrypted.toString() )

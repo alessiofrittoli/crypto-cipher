@@ -28,7 +28,9 @@ describe( 'Cipher - In-Memory Stream Symmetric Encryption/Decryption', () => {
 			}
 		} )
 	
-		await Cipher.streamEncrypt( password, { input, output } )
+		const { encrypt } = Cipher.streamEncrypt( password, { input, output } )
+
+		await encrypt()
 	
 		const encryptedResult = Buffer.concat( encryptedChunks )
 		
@@ -62,9 +64,11 @@ describe( 'Cipher - In-Memory Stream Symmetric Encryption/Decryption', () => {
 			},
 		} )
 	
-		await Cipher.streamDecrypt(
+		const { decrypt } = await Cipher.streamDecrypt(
 			password, { input, output }
 		)
+
+		await decrypt()
 	
 		const decrypted = Buffer.concat( chunks )
 

@@ -247,7 +247,9 @@ describe( 'Cipher.streamDecrypt()', () => {
 			},
 		} )
 
-		expect( () => Cipher.streamDecrypt( password, { input, output } ) )
+		const { decrypt } = await Cipher.streamDecrypt( password, { input, output } )
+
+		expect( () => decrypt() )
 			.rejects.toThrow( 'error:1C80006B:Provider routines::wrong final block length' )
 
 	} )

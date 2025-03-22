@@ -14,8 +14,7 @@ ________________________________________
 `
 )
 
-const env		= process.env.NODE_ENV
-const testEnv	= process.env.JSDOM === 'true' ? 'jest-environment-jsdom' : 'node'
+const env = process.env.NODE_ENV
 
 dotenv.config( { path: [
 	`.env.${ env }.local`,
@@ -31,9 +30,9 @@ dotenv.config( { path: [
  */
 const config: JestConfigWithTsJest = {
 	/** https://jestjs.io/docs/configuration#testenvironment-string */
-	testEnvironment: testEnv,
+	testEnvironment: 'node',
 	moduleDirectories: [ 'node_modules', '<rootDir>/' ],
-	setupFilesAfterEnv: [ './jest.setup.ts' ],
+	testMatch: [ '**/__tests__/**/*.test.ts' ],
 	/**
 	 * If you're using [Module Path Aliases](https://nextjs.org/docs/advanced-features/module-path-aliases),
 	 * you will have to add the moduleNameMapper in order for jest to resolve your absolute paths.

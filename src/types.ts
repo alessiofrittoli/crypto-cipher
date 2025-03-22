@@ -1,7 +1,10 @@
-import { CoerceToUint8ArrayInput } from '@alessiofrittoli/crypto-buffer'
 import type crypto from 'crypto'
 import type { Readable, Writable } from 'stream'
+import type { CoerceToUint8ArrayInput } from '@alessiofrittoli/crypto-buffer'
 
+/**
+ * Cipher types.
+ */
 export namespace Cph
 {
 	/** Cipher CBC algorithm types. */
@@ -11,7 +14,7 @@ export namespace Cph
 	/** Cipher supported algorithm types. */
 	export type AesAlgorithm = (
 		| crypto.CipherCCMTypes | crypto.CipherGCMTypes
-		| crypto.CipherOCBTypes | Cph.CBCTypes
+		| crypto.CipherOCBTypes | Cph.CBCTypes | crypto.CipherChaCha20Poly1305Types
 	)
 	
 	

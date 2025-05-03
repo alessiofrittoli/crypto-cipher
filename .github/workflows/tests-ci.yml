@@ -25,7 +25,7 @@ jobs:
 
     - name: Run tests
       run: |
-        pnpm test:ci:coverage
+        pnpm test:coverage:ci
     
     - name: Report to Coveralls
       uses: coverallsapp/github-action@v2

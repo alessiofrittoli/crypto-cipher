@@ -55,7 +55,7 @@ describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
 		// output where encrypted data is written
 		const output = fs.createWriteStream( encryptedPath )
 		// encrypt
-		const { encrypt } = Cipher.hybridEncrypt( password, {
+		const { encrypt } = Cipher.hybridStreamEncrypt( password, {
 			key			: keyPair.publicKey,
 			padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
 			oaepHash	: 'SHA-256',
@@ -78,7 +78,7 @@ describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
 		// output where decrypted data is written
 		const output = fs.createWriteStream( decryptedPath )
 		// decrypt
-		const { decrypt } = await Cipher.hybridDecrypt(
+		const { decrypt } = await Cipher.hybridStreamDecrypt(
 			{
 				key			: keyPair.privateKey,
 				passphrase	: password,

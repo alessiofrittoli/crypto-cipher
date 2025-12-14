@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import { Transform } from 'stream'
 import type { Readable, Writable } from 'stream'
+import { writeUint16BE, readUint16BE } from '@alessiofrittoli/crypto-buffer/conversion'
 import { coerceToUint8Array, type CoerceToUint8ArrayInput } from '@alessiofrittoli/crypto-buffer/coercion'
 
 import type { Cph } from './types'
@@ -98,7 +99,7 @@ export class Cipher
 	/**
 	 * Encrypt in-memory data buffer.
 	 *
-	 * ⚠️ This is not suitable for large data. Use {@link Cipher.streamEncrypt()} or {@link Cipher.hybridEncrypt()} methods for large data encryption.
+	 * ⚠️ This is not suitable for large data. Use {@link Cipher.streamEncrypt()} or {@link Cipher.hybridStreamEncrypt()} methods for large data encryption.
 	 *
 	 * @param	data	The data to encrypt.
 	 * @param	secret	The secret key used to encrypt the `data`.
@@ -154,7 +155,7 @@ export class Cipher
 	/**
 	 * Decrypt in-memory data buffer.
 	 *
-	 * ⚠️ This is not suitable for large data. Use {@link Cipher.streamDecrypt()} or {@link Cipher.hybridDecrypt()} methods for large data decryption.
+	 * ⚠️ This is not suitable for large data. Use {@link Cipher.streamDecrypt()} or {@link Cipher.hybridStreamDecrypt()} methods for large data decryption.
 	 *
 	 * @param	data	The data to decrypt.
 	 * @param	secret	The secret key used to decrypt the `data`.
@@ -287,7 +288,7 @@ export class Cipher
 		)
 
 		return (
-			Cipher.extractKeyIV( input, keyIvLength )
+			Cipher.ExtractKeyIVFromStream( input, keyIvLength )
 				.then( ( [ encryptedKeyIV, input ] ) => {
 					/**
 					 * Check if input has error and re-throw if so.
@@ -317,6 +318,82 @@ export class Cipher
 
 
 	/**
+	 * Encrypt data using hybrid encryption.
+	 * 
+	 * @param	data		The data to encrypt.
+	 * @param	publicKey	The public key.
+	 * @param	options		( Optional ) Additional options.
+	 * 
+	 * @returns	The encrypted result Buffer.
+	 */
+	static hybridEncrypt(
+		data		: CoerceToUint8ArrayInput,
+		publicKey	: crypto.KeyLike,
+		options?	: Cph.Options,
+	)
+	{
+
+		const Key = crypto.randomBytes( 32 )
+
+		const encryptedKey = (
+			crypto.publicEncrypt( {
+				key			: publicKey,
+				padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+				oaepHash	: 'sha256',
+			}, Key )
+		)
+
+		return Buffer.concat( [
+			writeUint16BE( encryptedKey.length ),
+			encryptedKey,
+			Cipher.encrypt( data, Key, options )
+		] )
+
+	}
+	
+	
+	/**
+	 * Decrypt data using hybrid decryption.
+	 * 
+	 * @param	data		The encrypted data to decrypt.
+	 * @param	privateKey	The private key.
+	 * @param	options		( Optional ) Additional options.
+	 * 
+	 * @returns	The encrypted result Buffer.
+	 */
+	static hybridDecrypt(
+		data		: CoerceToUint8ArrayInput,
+		privateKey	: crypto.KeyLike | { key: crypto.KeyLike, passphrase?: string },
+		options?	: Cph.Options,
+	)
+	{
+
+		const dataBuff			= Buffer.from( coerceToUint8Array( data ) )
+		const rsaKeyLength		= readUint16BE( dataBuff.subarray( 0, 2 ) )
+		const encryptedKey		= dataBuff.subarray( 2, 2 + rsaKeyLength )
+		const encryptedData		= dataBuff.subarray( 2 + rsaKeyLength )
+		const rsaPrivateKey		= (
+			typeof privateKey === 'object' && 'key' in privateKey ? privateKey.key : privateKey
+		)
+		const passphrase		= (
+			typeof privateKey === 'object' && 'passphrase' in privateKey ? privateKey.passphrase : undefined
+		)
+
+		const decryptedKey = (
+			crypto.privateDecrypt( {
+				key			: rsaPrivateKey,
+				passphrase	: passphrase,
+				padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+				oaepHash	: 'sha256',
+			}, encryptedKey )
+		)
+
+		return Cipher.decrypt( encryptedData, decryptedKey, options )
+		
+	}
+
+
+	/**
 	 * Encrypt a `Readable` to a `Writable` Stream with hybird Encryption.
 	 *
 	 * The `Readable` Stream could be 'in-memory buffer' or 'file' based.
@@ -328,7 +405,7 @@ export class Cipher
 	 * 	- a new instance of `crypto.Cipheriv` allowing you to add listeners to the `cipher` encryption process.
 	 * 	- the actual `encrypt` callback that must be called and awaited in order to start the encryption process.
 	 */
-	static hybridEncrypt(
+	static hybridStreamEncrypt(
 		secret		: CoerceToUint8ArrayInput,
 		publicKey	: crypto.RsaPublicKey | crypto.RsaPrivateKey | crypto.KeyLike,
 		options		: Cph.Stream.Hybrid.EncryptOptions,
@@ -367,7 +444,7 @@ export class Cipher
 	 * 	- a new instance of `crypto.Decipheriv` allowing you to add listeners to the `decipher` decryption process.
 	 * 	- the actual `decrypt` callback that must be called and awaited in order to start the decryption process.
 	 */
-	static hybridDecrypt(
+	static hybridStreamDecrypt(
 		privateKey	: crypto.RsaPrivateKey | crypto.KeyLike,
 		options		: Cph.Stream.Hybrid.DecryptOptions,
 	): Promise<Cph.Stream.Hybrid.DecryptReturnType>
@@ -375,11 +452,11 @@ export class Cipher
 		options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
 
 		const {
-			input, output, algorithm, length, rsaKeyLength,
+			input, output, algorithm, length, rsaKeyLength
 		} = Cipher.resolveOptions<Cph.Stream.Hybrid.DecryptResolvedOptions>( options )
 
 		return (
-			Cipher.extractKeyIV( input, rsaKeyLength )
+			Cipher.ExtractKeyIVFromStream( input, rsaKeyLength )
 				.then( ( [ encryptedKeyIV, input ] ) => {
 					const KeyIV		= crypto.privateDecrypt( privateKey, encryptedKeyIV )
 					const Key		= KeyIV.subarray( 0, length )
@@ -407,8 +484,7 @@ export class Cipher
 	private static stream( options: StreamEncryptOptions )
 	{
 		const {
-			cipher, encryptedKey,
-			input, output
+			cipher, encryptedKey, input, output
 		} = options
 
 		return (
@@ -418,6 +494,7 @@ export class Cipher
 				output.on( 'error', reject )
 				output.on( 'finish', resolve )
 		
+				// output.write( writeUint16BE( encryptedKey.length ) )
 				output.write( encryptedKey )
 				input.pipe( cipher ).pipe( output )
 			} )
@@ -457,7 +534,7 @@ export class Cipher
 	 * @param	keyLength	The encrypted key length in bytes. This is used to properly extract the encrypted Cipher Key and Initialization Vector.
 	 * @returns	A new Promise that resolve a tuple containing the Cipher Encrypted Symmetric Key and Initialization Vector once fulfilled.
 	 */
-	private static extractKeyIV(
+	private static ExtractKeyIVFromStream(
 		input		: Readable,
 		keyLength	: number,
 	)

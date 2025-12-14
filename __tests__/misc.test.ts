@@ -321,7 +321,7 @@ describe( 'Cipher.streamDecrypt()', () => {
 
 		expect( () => Cipher.streamDecrypt( password, { input, output } ) )
 			.rejects.toThrow( 'The extracted KeyIV length is less than the expected length.' )
-		expect( () => Cipher.hybridDecrypt( password, { input, output, rsaKeyLength: 256 } ) )
+		expect( () => Cipher.hybridStreamDecrypt( password, { input, output, rsaKeyLength: 256 } ) )
 			.rejects.toThrow( 'The extracted KeyIV length is less than the expected length.' )
 
 

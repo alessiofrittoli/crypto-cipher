@@ -30,8 +30,8 @@
     - [`Cipher.decrypt()`](#cipherdecrypt)
     - [`Cipher.streamEncrypt()`](#cipherstreamencrypt)
     - [`Cipher.streamDecrypt()`](#cipherstreamencrypt)
-    - [`Cipher.hybridEncrypt()`](#cipherhybridencrypt)
-    - [`Cipher.hybridDecrypt()`](#cipherhybriddecrypt)
+    - [`Cipher.hybridStreamEncrypt()`](#cipherhybridstreamencrypt)
+    - [`Cipher.hybridStreamDecrypt()`](#cipherhybridstreamdecrypt)
   - [Types](#types)
 - [Examples](#examples)
   - [In-memory data buffer encryption/decryption](#in-memory-data-buffer-encryptiondecryption)
@@ -211,7 +211,7 @@ Supported AES algorithms:
 Encrypts an in-memory data buffer.
 
 ⚠️ This is not suitable for large data.
-Use [`Cipher.streamEncrypt()`](#cipherstreamencrypt) or [`Cipher.hybridEncrypt()`](#cipherhybridencrypt) methods for large data encryption.
+Use [`Cipher.streamEncrypt()`](#cipherstreamencrypt) or [`Cipher.hybridStreamEncrypt()`](#cipherhybridStreamEncrypt) methods for large data encryption.
 
 <details>
 
@@ -250,7 +250,7 @@ Type: `Buffer`
 Decrypts an in-memory data buffer.
 
 ⚠️ This is not suitable for large data.
-Use [`Cipher.streamDecrypt()`](#cipherstreamdecrypt) or [`Cipher.hybridDecrypt()`](#cipherhybriddecrypt) methods for large data decryption.
+Use [`Cipher.streamDecrypt()`](#cipherstreamdecrypt) or [`Cipher.hybridStreamDecrypt()`](#cipherhybridStreamDecrypt) methods for large data decryption.
 
 <details>
 
@@ -360,7 +360,7 @@ Type: `Promise<Cph.Stream.Symmetric.DecryptReturnType>`
 
 ---
 
-##### `Cipher.hybridEncrypt()`
+##### `Cipher.hybridStreamEncrypt()`
 
 Encrypts a stream using hybrid encryption (symmetric + RSA).
 
@@ -393,13 +393,13 @@ Type: `Cph.Stream.Hybrid.EncryptReturnType`
 ---
 
 - See [`CoerceToUint8ArrayInput`](#coercetouint8arrayinput) for more informations about supported input data types.
-- See [`Cph.Stream.Hybrid.EncryptOptions`](#cphstreamhybridencryptoptions) for more informations about encryption options.
+- See [`Cph.Stream.Hybrid.EncryptOptions`](#cphstreamhybridStreamEncryptoptions) for more informations about encryption options.
 - See [In-memory data stream with hybrid encryption/decryption](#in-memory-data-stream-with-hybrid-encryptiondecryption) examples.
 - See [File based data stream with hybrid encryption/decryption](#file-based-data-stream-with-hybrid-encryptiondecryption) examples.
 
 ---
 
-##### `Cipher.hybridDecrypt()`
+##### `Cipher.hybridStreamDecrypt()`
 
 Decrypts a stream using hybrid decryption (symmetric + RSA).
 
@@ -430,7 +430,7 @@ Type: `Promise<Cph.Stream.Hybrid.DecryptReturnType>`
 
 ---
 
-- See [`Cph.Stream.Hybrid.DecryptOptions`](#cphstreamhybriddecryptoptions) for more informations about decryption options.
+- See [`Cph.Stream.Hybrid.DecryptOptions`](#cphstreamhybridStreamDecryptoptions) for more informations about decryption options.
 - See [In-memory data stream with hybrid encryption/decryption](#in-memory-data-stream-with-hybrid-encryptiondecryption) examples.
 - See [File based data stream with hybrid encryption/decryption](#file-based-data-stream-with-hybrid-encryptiondecryption) examples.
 
@@ -573,7 +573,7 @@ Stream hybrid encryption options.
 
 ##### `Cph.Stream.Hybrid.EncryptReturnType`
 
-Returnign object from `Cipher.hybridEncrypt()` method.
+Returnign object from `Cipher.hybridStreamEncrypt()` method.
 
 - Alias for [`Cph.Stream.Symmetric.EncryptReturnType`](#cphstreamsymmetricencryptreturntype)
 
@@ -599,7 +599,7 @@ Stream hybrid decryption options.
 
 ##### `Cph.Stream.Hybrid.DecryptReturnType`
 
-Returnign object from awaited `Cipher.hybridDecrypt()` method.
+Returnign object from awaited `Cipher.hybridStreamDecrypt()` method.
 
 - Alias for [`Cph.Stream.Symmetric.DecryptReturnType`](#cphstreamsymmetricdecryptreturntype)
 
@@ -786,7 +786,7 @@ const output = new Writable({
   },
 });
 
-const { encrypt } = Cipher.hybridEncrypt(
+const { encrypt } = Cipher.hybridStreamEncrypt(
   password,
   {
     key: keyPair.publicKey,
@@ -822,7 +822,7 @@ const output = new Writable({
   },
 });
 
-const { decrypt } = await Cipher.hybridDecrypt(
+const { decrypt } = await Cipher.hybridStreamDecrypt(
   {
     key: keyPair.privateKey,
     passphrase: password, // optional passhrase (required if set while generating keypair).
@@ -922,7 +922,7 @@ const input = fs.createReadStream("my-very-large-top-secret-file.pdf");
 // output where encrypted data is written
 const output = fs.createWriteStream("my-very-large-top-secret-file.encrypted");
 // encrypt
-const { encrypt } = Cipher.hybridEncrypt(
+const { encrypt } = Cipher.hybridStreamEncrypt(
   password,
   {
     key: keyPair.publicKey,
@@ -950,7 +950,7 @@ const output = fs.createWriteStream(
   "my-very-large-top-secret-file-decrypted.pdf"
 );
 // decrypt
-const { decrypt } = await Cipher.hybridDecrypt(
+const { decrypt } = await Cipher.hybridStreamDecrypt(
   {
     key: keyPair.privateKey,
     passphrase: password, // optional passhrase (required if set while generating keypair).

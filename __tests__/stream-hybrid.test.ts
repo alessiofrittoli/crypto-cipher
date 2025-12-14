@@ -37,7 +37,7 @@ describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
 			}
 		} )
 	
-		const { encrypt } =  Cipher.hybridEncrypt( password, {
+		const { encrypt } =  Cipher.hybridStreamEncrypt( password, {
 			key			: keyPair.publicKey,
 			padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
 			oaepHash	: 'SHA-256',
@@ -77,7 +77,7 @@ describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
 			},
 		} )
 	
-		const { decrypt } = await Cipher.hybridDecrypt(
+		const { decrypt } = await Cipher.hybridStreamDecrypt(
 			{
 				key			: keyPair.privateKey,
 				passphrase	: password,

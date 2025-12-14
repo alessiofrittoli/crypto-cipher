@@ -12,7 +12,7 @@ import type { Cph } from './types'
  */
 interface StreamEncryptOptions
 {
-	cipher		: crypto.Cipher
+	cipher		: crypto.Cipheriv
 	encryptedKey: Buffer
 	input		: Readable
 	output		: Writable
@@ -24,7 +24,7 @@ interface StreamEncryptOptions
  */
 interface StreamDecryptOptions
 {
-	decipher	: crypto.Decipher
+	decipher	: crypto.Decipheriv
 	input		: Readable
 	output		: Writable
 }
@@ -230,7 +230,7 @@ export class Cipher
 	 * @param	secret	The secret key used to encrypt the `data`.
 	 * @param	options Additional options.
 	 * @returns An object containing:
-	 * 	- a new instance of `crypto.Cipher` allowing you to add listeners to the `cipher` encryption process.
+	 * 	- a new instance of `crypto.Cipheriv` allowing you to add listeners to the `cipher` encryption process.
 	 * 	- the actual `encrypt` callback that must be called and awaited in order to start the encryption process.
 	 */
 	static streamEncrypt(
@@ -267,7 +267,7 @@ export class Cipher
 	 * @param	secret	The secret key used to encrypt the `data`.
 	 * @param	options Additional options.
 	 * @returns A new Promise that resolves when Key IV extraction completes returning an object containing:
-	 * 	- a new instance of `crypto.Decipher` allowing you to add listeners to the `decipher` decryption process.
+	 * 	- a new instance of `crypto.Decipheriv` allowing you to add listeners to the `decipher` decryption process.
 	 * 	- the actual `decrypt` callback that must be called and awaited in order to start the decryption process.
 	 */
 	static streamDecrypt(
@@ -325,7 +325,7 @@ export class Cipher
 	 * @param	publicKey	The RSA public key used to encrypt the symmetric key.
 	 * @param	options		Options for the stream encryption.
 	 * @returns An object containing:
-	 * 	- a new instance of `crypto.Cipher` allowing you to add listeners to the `cipher` encryption process.
+	 * 	- a new instance of `crypto.Cipheriv` allowing you to add listeners to the `cipher` encryption process.
 	 * 	- the actual `encrypt` callback that must be called and awaited in order to start the encryption process.
 	 */
 	static hybridEncrypt(
@@ -364,7 +364,7 @@ export class Cipher
 	 * @param	privateKey	The RSA private key used to decrypt the symmetric key.
 	 * @param	options		Options for the stream decryption.
 	 * @returns A new Promise that resolves when Key IV extraction completes returning an object containing:
-	 * 	- a new instance of `crypto.Decipher` allowing you to add listeners to the `decipher` decryption process.
+	 * 	- a new instance of `crypto.Decipheriv` allowing you to add listeners to the `decipher` decryption process.
 	 * 	- the actual `decrypt` callback that must be called and awaited in order to start the decryption process.
 	 */
 	static hybridDecrypt(

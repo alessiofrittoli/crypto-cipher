@@ -13,7 +13,6 @@
 [downloads-badge]: https://img.shields.io/npm/dm/%40alessiofrittoli%2Fcrypto-cipher.svg
 [deps-badge]: https://img.shields.io/librariesio/release/npm/%40alessiofrittoli%2Fcrypto-cipher
 [deps-url]: https://libraries.io/npm/%40alessiofrittoli%2Fcrypto-cipher
-
 [sponsor-badge]: https://img.shields.io/static/v1?label=Fund%20this%20package&message=%E2%9D%A4&logo=GitHub&color=%23DB61A2
 [sponsor-url]: https://github.com/sponsors/alessiofrittoli
 
@@ -103,11 +102,11 @@ Defines the minimum, maximum, and default lengths for salt.
 <details>
 <summary>Properties</summary>
 
-| Property   | Value |
-|------------|-------|
-| `min`      | 16    |
-| `max`      | 64    |
-| `default`  | 32    |
+| Property  | Value |
+| --------- | ----- |
+| `min`     | 16    |
+| `max`     | 64    |
+| `default` | 32    |
 
 </details>
 
@@ -120,11 +119,11 @@ Defines the minimum, maximum, and default lengths for initialization vectors (IV
 <details>
 <summary>Properties</summary>
 
-| Property   | Value |
-|------------|-------|
-| `min`      | 8     |
-| `max`      | 32    |
-| `default`  | 16    |
+| Property  | Value |
+| --------- | ----- |
+| `min`     | 8     |
+| `max`     | 32    |
+| `default` | 16    |
 
 </details>
 
@@ -137,11 +136,11 @@ Defines the minimum, maximum, and default lengths for authentication tags.
 <details>
 <summary>Properties</summary>
 
-| Property   | Value |
-|------------|-------|
-| `min`      | 4     |
-| `max`      | 16    |
-| `default`  | 16    |
+| Property  | Value |
+| --------- | ----- |
+| `min`     | 4     |
+| `max`     | 16    |
+| `default` | 16    |
 
 </details>
 
@@ -154,11 +153,11 @@ Defines the minimum, maximum, and default lengths for additional authenticated d
 <details>
 <summary>Properties</summary>
 
-| Property   | Value |
-|------------|-------|
-| `min`      | 16    |
-| `max`      | 4096  |
-| `default`  | 32    |
+| Property  | Value |
+| --------- | ----- |
+| `min`     | 16    |
+| `max`     | 4096  |
+| `default` | 32    |
 
 </details>
 
@@ -171,10 +170,10 @@ Specifies default AES algorithms for buffer and stream operations.
 <details>
 <summary>Properties</summary>
 
-| Operation  | Algorithm    | Description |
-|------------|--------------|-------------|
-| `buffer`   | `aes-256-gcm` | Default algorithm used for buffer data encryption/decryption |
-| `stream`   | `aes-256-cbc` | Default algorithm used for stream encryption/decryption |
+| Operation | Algorithm     | Description                                                  |
+| --------- | ------------- | ------------------------------------------------------------ |
+| `buffer`  | `aes-256-gcm` | Default algorithm used for buffer data encryption/decryption |
+| `stream`  | `aes-256-cbc` | Default algorithm used for stream encryption/decryption      |
 
 </details>
 
@@ -218,11 +217,11 @@ Use [`Cipher.streamEncrypt()`](#cipherstreamencrypt) or [`Cipher.hybridEncrypt()
 
 <summary>Parameters</summary>
 
-| Name     | Type                    | Description                             |
-|----------|-------------------------|-----------------------------------------|
-| `data`   | `CoerceToUint8ArrayInput` | Data to encrypt.                        |
-| `secret` | `CoerceToUint8ArrayInput` | Secret key for encryption.              |
-| `options`| `Cph.Options`           | (Optional) Additional encryption options.|
+| Name      | Type                      | Description                               |
+| --------- | ------------------------- | ----------------------------------------- |
+| `data`    | `CoerceToUint8ArrayInput` | Data to encrypt.                          |
+| `secret`  | `CoerceToUint8ArrayInput` | Secret key for encryption.                |
+| `options` | `Cph.Options`             | (Optional) Additional encryption options. |
 
 </details>
 
@@ -257,11 +256,11 @@ Use [`Cipher.streamDecrypt()`](#cipherstreamdecrypt) or [`Cipher.hybridDecrypt()
 
 <summary>Parameters</summary>
 
-| Name     | Type                    | Description                             |
-|----------|-------------------------|-----------------------------------------|
-| `data`   | `CoerceToUint8ArrayInput` | Data to decrypt.                        |
-| `secret` | `CoerceToUint8ArrayInput` | Secret key for decryption.              |
-| `options`| `Cph.Options`           | (Optional) Decryption options (must match encryption).|
+| Name      | Type                      | Description                                            |
+| --------- | ------------------------- | ------------------------------------------------------ |
+| `data`    | `CoerceToUint8ArrayInput` | Data to decrypt.                                       |
+| `secret`  | `CoerceToUint8ArrayInput` | Secret key for decryption.                             |
+| `options` | `Cph.Options`             | (Optional) Decryption options (must match encryption). |
 
 </details>
 
@@ -293,10 +292,10 @@ Encrypts a `Readable` stream to a `Writable` stream.
 
 <summary>Parameters</summary>
 
-| Name      | Type                              | Description                           |
-|-----------|-----------------------------------|---------------------------------------|
-| `secret`  | `CoerceToUint8ArrayInput`         | Secret key for encryption.            |
-| `options` | `Cph.Stream.Symmetric.EncryptOptions` | Stream encryption options.        |
+| Name      | Type                                  | Description                |
+| --------- | ------------------------------------- | -------------------------- |
+| `secret`  | `CoerceToUint8ArrayInput`             | Secret key for encryption. |
+| `options` | `Cph.Stream.Symmetric.EncryptOptions` | Stream encryption options. |
 
 </details>
 
@@ -309,7 +308,7 @@ Encrypts a `Readable` stream to a `Writable` stream.
 Type: `Cph.Stream.Symmetric.EncryptReturnType`
 
 - An object containing:
-  - a new instance of `crypto.Cipher` allowing you to add listeners to the `cipher` encryption process.
+  - a new instance of `crypto.Cipheriv` allowing you to add listeners to the `cipher` encryption process.
   - the actual `encrypt` callback that must be called and awaited in order to start the encryption process.
 
 </details>
@@ -331,10 +330,10 @@ Decrypts a `Readable` stream to a `Writable` stream.
 
 <summary>Parameters</summary>
 
-| Name      | Type                              | Description                           |
-|-----------|-----------------------------------|---------------------------------------|
-| `secret`  | `CoerceToUint8ArrayInput`         | Secret key for decryption.            |
-| `options` | `Cph.Stream.Symmetric.DecryptOptions` | Stream decryption options.            |
+| Name      | Type                                  | Description                |
+| --------- | ------------------------------------- | -------------------------- |
+| `secret`  | `CoerceToUint8ArrayInput`             | Secret key for decryption. |
+| `options` | `Cph.Stream.Symmetric.DecryptOptions` | Stream decryption options. |
 
 </details>
 
@@ -347,7 +346,7 @@ Decrypts a `Readable` stream to a `Writable` stream.
 Type: `Promise<Cph.Stream.Symmetric.DecryptReturnType>`
 
 - A new Promise that resolves when Key IV extraction completes returning an object containing:
-  - a new instance of `crypto.Decipher` allowing you to add listeners to the `decipher` decryption process.
+  - a new instance of `crypto.Decipheriv` allowing you to add listeners to the `decipher` decryption process.
   - the actual `decrypt` callback that must be called and awaited in order to start the decryption process.
 
 </details>
@@ -369,11 +368,11 @@ Encrypts a stream using hybrid encryption (symmetric + RSA).
 
 <summary>Parameters</summary>
 
-| Name        | Type                              | Description                           |
-|-------------|-----------------------------------|---------------------------------------|
-| `secret`    | `CoerceToUint8ArrayInput`         | Symmetric secret key.                 |
+| Name        | Type                                    | Description                                                 |
+| ----------- | --------------------------------------- | ----------------------------------------------------------- |
+| `secret`    | `CoerceToUint8ArrayInput`               | Symmetric secret key.                                       |
 | `publicKey` | `crypto.RsaPublicKey \| crypto.KeyLike` | RSA public key used to encrypt the generated symmetric key. |
-| `options`   | `Cph.Stream.Hybrid.EncryptOptions` | Stream encryption options.        |
+| `options`   | `Cph.Stream.Hybrid.EncryptOptions`      | Stream encryption options.                                  |
 
 </details>
 
@@ -408,10 +407,10 @@ Decrypts a stream using hybrid decryption (symmetric + RSA).
 
 <summary>Parameters</summary>
 
-| Name         | Type                              | Description                           |
-|--------------|-----------------------------------|---------------------------------------|
+| Name         | Type                                     | Description                                                      |
+| ------------ | ---------------------------------------- | ---------------------------------------------------------------- |
 | `privateKey` | `crypto.RsaPrivateKey \| crypto.KeyLike` | RSA private key for used to decrpyt the encrypted symmetric key. |
-| `options`    | `Cph.Stream.Hybrid.DecryptOptions` | Stream decryption options.           |
+| `options`    | `Cph.Stream.Hybrid.DecryptOptions`       | Stream decryption options.                                       |
 
 </details>
 
@@ -424,7 +423,7 @@ Decrypts a stream using hybrid decryption (symmetric + RSA).
 Type: `Promise<Cph.Stream.Hybrid.DecryptReturnType>`
 
 - A new Promise that resolves when Key IV extraction completes returning an object containing:
-  - a new instance of `crypto.Decipher` allowing you to add listeners to the `decipher` decryption process.
+  - a new instance of `crypto.Decipheriv` allowing you to add listeners to the `decipher` decryption process.
   - the actual `decrypt` callback that must be called and awaited in order to start the decryption process.
 
 </details>
@@ -467,8 +466,8 @@ Common options in encryption/decryption processes.
 
 <summary>Type parameters</summary>
 
-| Parameter | Default        | Description |
-|-----------|----------------|-------------|
+| Parameter | Default            | Description                                                                            |
+| --------- | ------------------ | -------------------------------------------------------------------------------------- |
 | `T`       | `Cph.AesAlgorithm` | Accepted algorithm in `Cph.Options`. This is usefull to constraint specifc algorithms. |
 
 </details>
@@ -479,14 +478,14 @@ Common options in encryption/decryption processes.
 
 <summary>Properties</summary>
 
-| Property    | Type     | Default       | Description |
-|-------------|----------|---------------|-------------|
-| `algorithm` | `T`      | `aes-256-gcm \| aes-256-cbc` | Accepted algorithms. |
-| `salt`      | `number` | `32` | The `salt` length in bytes. Minimum: `16`, Maximum: `64`. |
-| `iv`        | `number` | `16` | The Initialization Vector length in bytes. Minimum: `8`, Maximum: `32`. |
-| `authTag`   | `number` | `16` | The `authTag` length in bytes. Minimum: `4`, Maximum: `16`. |
-| `aad`       | `CoerceToUint8ArrayInput` | - | Custom Additional Authenticated Data. `aadLength` is then automatically resolved. If not provided, a random AAD is generated with a max length of `aadLength`. |
-| `aadLength` | `number` | `32` | The auto generated AAD length in bytes. Minimum: `16`, Maximum: `128`. |
+| Property    | Type                      | Default                      | Description                                                                                                                                                    |
+| ----------- | ------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `algorithm` | `T`                       | `aes-256-gcm \| aes-256-cbc` | Accepted algorithms.                                                                                                                                           |
+| `salt`      | `number`                  | `32`                         | The `salt` length in bytes. Minimum: `16`, Maximum: `64`.                                                                                                      |
+| `iv`        | `number`                  | `16`                         | The Initialization Vector length in bytes. Minimum: `8`, Maximum: `32`.                                                                                        |
+| `authTag`   | `number`                  | `16`                         | The `authTag` length in bytes. Minimum: `4`, Maximum: `16`.                                                                                                    |
+| `aad`       | `CoerceToUint8ArrayInput` | -                            | Custom Additional Authenticated Data. `aadLength` is then automatically resolved. If not provided, a random AAD is generated with a max length of `aadLength`. |
+| `aadLength` | `number`                  | `32`                         | The auto generated AAD length in bytes. Minimum: `16`, Maximum: `128`.                                                                                         |
 
 </details>
 
@@ -502,10 +501,10 @@ Stream symmetric encryption options.
 
 <summary>Properties</summary>
 
-| Property | Type     | Description |
-|----------|----------|-------------|
+| Property | Type       | Description                                                   |
+| -------- | ---------- | ------------------------------------------------------------- |
 | `input`  | `Readable` | The `Readable` Stream from where raw data to encrypt is read. |
-| `output` | `Writable` | The `Writable` Stream where encrypted data is written. |
+| `output` | `Writable` | The `Writable` Stream where encrypted data is written.        |
 
 </details>
 
@@ -519,9 +518,9 @@ Returnign object from `Cipher.streamEncrypt()` method.
 
 <summary>Properties</summary>
 
-| Property | Type     | Description |
-|----------|----------|-------------|
-| `cipher`  | `crypto.Cipher` | The `crypto.Cipher` instance. |
+| Property  | Type                  | Description                                                                                             |
+| --------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `cipher`  | `crypto.Cipheriv`     | The `crypto.Cipheriv` instance.                                                                         |
 | `encrypt` | `() => Promise<void>` | The actual `encrypt` callback that must be called and awaited in order to start the encryption process. |
 
 </details>
@@ -538,10 +537,10 @@ Stream symmetric decryption options.
 
 <summary>Properties</summary>
 
-| Property | Type     | Description |
-|----------|----------|-------------|
+| Property | Type       | Description                                              |
+| -------- | ---------- | -------------------------------------------------------- |
 | `input`  | `Readable` | The `Readable` Stream from where encrypted data is read. |
-| `output` | `Writable` | The `Writable` Stream where decrypted data is written. |
+| `output` | `Writable` | The `Writable` Stream where decrypted data is written.   |
 
 </details>
 
@@ -555,10 +554,10 @@ Returnign object from awaited `Cipher.streamDecrypt()` method.
 
 <summary>Properties</summary>
 
-| Property | Type     | Description |
-|----------|----------|-------------|
-| `decipher` | `crypto.Decipher` | The `crypto.Decipher` instance. |
-| `decrypt` | `() => Promise<void>` | The actual `decrypt` callback that must be called and awaited in order to start the decryption process. |
+| Property   | Type                  | Description                                                                                             |
+| ---------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `decipher` | `crypto.Decipheriv`   | The `crypto.Decipheriv` instance.                                                                       |
+| `decrypt`  | `() => Promise<void>` | The actual `decrypt` callback that must be called and awaited in order to start the decryption process. |
 
 </details>
 
@@ -590,8 +589,8 @@ Stream hybrid decryption options.
 
 <summary>Properties</summary>
 
-| Property       | Type     | Description |
-|----------------|----------|-------------|
+| Property       | Type     | Description                                                                                                                                                          |
+| -------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `rsaKeyLength` | `number` | The RSA key length in bytes used while encrypting data. This is used to properly extract the encrypted Cipher Key and Initialization Vector from the encrypted data. |
 
 </details>
@@ -611,8 +610,8 @@ Returnign object from awaited `Cipher.hybridDecrypt()` method.
 #### Importing the library
 
 ```ts
-import { Cipher } from '@alessiofrittoli/crypto-cipher'
-import type { Cph as CipherTypes } from '@alessiofrittoli/crypto-cipher/types'
+import { Cipher } from "@alessiofrittoli/crypto-cipher";
+import type { Cph as CipherTypes } from "@alessiofrittoli/crypto-cipher/types";
 ```
 
 #### In-memory data buffer encryption/decryption
@@ -621,14 +620,14 @@ The simpliest way to encrypt/decrypt in-memory data buffers.
 
 ```ts
 // encrypt
-const data      = 'my top-secret data'
-const password  = 'my-very-strong-password'
+const data = "my top-secret data";
+const password = "my-very-strong-password";
 
-const encrypted = Cipher.encrypt( data, password )
+const encrypted = Cipher.encrypt(data, password);
 
 // decrypt
-const decrypted = Cipher.decrypt( encrypted, password )
-console.log( decrypted ) // Outputs: my top-secret data
+const decrypted = Cipher.decrypt(encrypted, password);
+console.log(decrypted); // Outputs: my top-secret data
 ```
 
 ---
@@ -642,45 +641,41 @@ The in-memory data stream comes pretty handy when, for example, we need to strea
 ```ts
 // /api/stream-encrypt
 
-import { Readable, Writable } from 'stream'
+import { Readable, Writable } from "stream";
 
 const routeHandler = () => {
-  const data      = 'my top-secret data'
-  const password  = 'my-very-strong-password'
-  const stream    = new TransformStream()
-  const writer    = stream.writable.getWriter()
-  
+  const data = "my top-secret data";
+  const password = "my-very-strong-password";
+  const stream = new TransformStream();
+  const writer = stream.writable.getWriter();
+
   // Create a `Readable` Stream with raw data.
-  const input = new Readable( {
-    read()
-    {
-      this.push( data )
-      this.push( null ) // Signal end of stream
+  const input = new Readable({
+    read() {
+      this.push(data);
+      this.push(null); // Signal end of stream
     },
-  } )
-      
+  });
+
   // `Writable` Stream where encrypted data is written
-  const output = new Writable( {
-    write( chunk, encoding, callback )
-    {
-      writer.write( chunk )
-      callback()
+  const output = new Writable({
+    write(chunk, encoding, callback) {
+      writer.write(chunk);
+      callback();
     },
-    final( callback )
-    {
-      writer.close()
-      callback()
-    }
-  } )
-  
-  Cipher.streamEncrypt( password, { input, output } )
-    .encrypt()
-  
+    final(callback) {
+      writer.close();
+      callback();
+    },
+  });
+
+  Cipher.streamEncrypt(password, { input, output }).encrypt();
+
   return (
     // encrypted stream
-    new Response( stream.readable )
-  )
-}
+    new Response(stream.readable)
+  );
+};
 ```
 
 ##### Decrypting received stream
@@ -688,59 +683,51 @@ const routeHandler = () => {
 ```ts
 // /api/stream-decrypt
 
-import { Transform, Writable } from 'stream'
-import { StreamReader } from '@alessiofrittoli/stream-reader'
+import { Transform, Writable } from "stream";
+import { StreamReader } from "@alessiofrittoli/stream-reader";
 
-const password = 'my-very-strong-password'
+const password = "my-very-strong-password";
 
-const routeHandler = () => (
-  fetch( '/api/stream-encrypt' )
-    .then( response => {
+const routeHandler = () =>
+  fetch("/api/stream-encrypt").then((response) => {
+    if (!response.body) {
+      return new Respone(null, { status: 400 });
+    }
 
-      if ( ! response.body ) {
-        return (
-          new Respone( null, { status: 400 } )
-        )
-      }
+    const stream = new TransformStream();
+    const writer = stream.writable.getWriter();
+    const reader = new StreamReader(response.body);
+    const input = new Transform();
 
-      const stream  = new TransformStream()
-      const writer  = stream.writable.getWriter()
-      const reader  = new StreamReader( response.body )
-      const input   = new Transform()
-      
-      reader.read()
-      
+    reader.read();
 
-      reader.on( 'read', chunk => {
-        input.push( chunk )
-      } )
-      reader.on( 'close', () => {
-        input.push( null )
-      } )
+    reader.on("read", (chunk) => {
+      input.push(chunk);
+    });
+    reader.on("close", () => {
+      input.push(null);
+    });
 
-      const output = new Writable( {
-        write( chunk, encoding, callback )
-        {
-          writer.write( chunk )
-          callback()
-        },
-        final( callback ) {
-          writer.close()
-          callback()
-        },
-      } )
-      
-      const { decrypt } = await Cipher.streamDecrypt( password, { input, output } )
+    const output = new Writable({
+      write(chunk, encoding, callback) {
+        writer.write(chunk);
+        callback();
+      },
+      final(callback) {
+        writer.close();
+        callback();
+      },
+    });
 
-      decrypt()
-      
-      return (
-        // decrypted stream
-        new Response( stream.readable )
-      )
-      
-    } )
-)
+    const { decrypt } = await Cipher.streamDecrypt(password, { input, output });
+
+    decrypt();
+
+    return (
+      // decrypted stream
+      new Response(stream.readable)
+    );
+  });
 ```
 
 ---
@@ -752,58 +739,64 @@ Hybrid encryption offers an higher level of security by encrypting the generated
 ##### Keypair
 
 ```ts
-const password  = 'my-very-strong-password'
+const password = "my-very-strong-password";
 
 /** RSA modulus length is required for proper key extraction during decryption process. */
-const rsaKeyLength = 512 // bytes
-const keyPair = crypto.generateKeyPairSync( 'rsa', {
-  modulusLength       : rsaKeyLength * 8, // 4096 bits
-  publicKeyEncoding   : { type: 'spki', format: 'pem' },
-  privateKeyEncoding  : { type: 'pkcs1', format: 'pem' },
-} )
-
+const rsaKeyLength = 512; // bytes
+const keyPair = crypto.generateKeyPairSync("rsa", {
+  modulusLength: rsaKeyLength * 8, // 4096 bits
+  publicKeyEncoding: { type: "spki", format: "pem" },
+  privateKeyEncoding: { type: "pkcs1", format: "pem" },
+});
 
 // or you can optionally set a custom passphrase
-const keyPair = crypto.generateKeyPairSync( 'rsa', {
-  modulusLength       : rsaKeyLength * 8, // 4096 bits
-  publicKeyEncoding   : { type: 'spki', format: 'pem' },
-  privateKeyEncoding  : { type: 'pkcs1', format: 'pem', passphrase: password, cipher: 'aes-256-cbc' },
-} )
+const keyPair = crypto.generateKeyPairSync("rsa", {
+  modulusLength: rsaKeyLength * 8, // 4096 bits
+  publicKeyEncoding: { type: "spki", format: "pem" },
+  privateKeyEncoding: {
+    type: "pkcs1",
+    format: "pem",
+    passphrase: password,
+    cipher: "aes-256-cbc",
+  },
+});
 ```
 
 ##### Encrypt
 
 ```ts
-const data = 'my top-secret data'
+const data = "my top-secret data";
 /** Store encrypted chunks for next example. */
-const encryptedChunks: Buffer[] = []
+const encryptedChunks: Buffer[] = [];
 
 // Create a `Readable` Stream with raw data.
-const input = new Readable( {
-  read()
-  {
-    this.push( data ) // Push data to encrypt
-    this.push( null ) // Signal end of stream
+const input = new Readable({
+  read() {
+    this.push(data); // Push data to encrypt
+    this.push(null); // Signal end of stream
   },
-} )
-    
+});
+
 // Create a `Writable` Stream where encrypted data is written
-const output = new Writable( {
-  write( chunk, encoding, callback )
-  {
+const output = new Writable({
+  write(chunk, encoding, callback) {
     // push written chunk to `encryptedChunks` for further usage.
-    encryptedChunks.push( chunk )
-    callback()
-  }
-} )
+    encryptedChunks.push(chunk);
+    callback();
+  },
+});
 
-const { encrypt } = Cipher.hybridEncrypt( password, {
-  key       : keyPair.publicKey,
-  padding   : crypto.constants.RSA_PKCS1_OAEP_PADDING,
-  oaepHash  : 'SHA-256',
-}, { input, output } )
+const { encrypt } = Cipher.hybridEncrypt(
+  password,
+  {
+    key: keyPair.publicKey,
+    padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+    oaepHash: "SHA-256",
+  },
+  { input, output }
+);
 
-await encrypt()
+await encrypt();
 ```
 
 ---
@@ -812,37 +805,36 @@ await encrypt()
 
 ```ts
 /** Store decrypted chunks. */
-const chunks: Buffer[] = []
+const chunks: Buffer[] = [];
 // Create a `Readable` Stream with encrypted data.
-const input = new Readable( {
-  read()
-  {
-    this.push( Buffer.concat( encryptedChunks ) ) // Push data to decrypt
-    this.push( null ) // Signal end of stream
+const input = new Readable({
+  read() {
+    this.push(Buffer.concat(encryptedChunks)); // Push data to decrypt
+    this.push(null); // Signal end of stream
   },
-} )
+});
 
 // Create a `Writable` Stream where decrypted data is written
-const output = new Writable( {
-  write( chunk, encoding, callback )
-  {
-    chunks.push( chunk )
-    callback()
+const output = new Writable({
+  write(chunk, encoding, callback) {
+    chunks.push(chunk);
+    callback();
   },
-} )
+});
 
 const { decrypt } = await Cipher.hybridDecrypt(
   {
-    key       : keyPair.privateKey,
+    key: keyPair.privateKey,
     passphrase: password, // optional passhrase (required if set while generating keypair).
-    padding   : crypto.constants.RSA_PKCS1_OAEP_PADDING,
-    oaepHash  : 'SHA-256',
-  }, { input, output, rsaKeyLength }
-)
+    padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+    oaepHash: "SHA-256",
+  },
+  { input, output, rsaKeyLength }
+);
 
-await decrypt()
+await decrypt();
 
-console.log( Buffer.concat( chunks ).toString() ) // Outputs: 'my top-secret data'
+console.log(Buffer.concat(chunks).toString()); // Outputs: 'my top-secret data'
 ```
 
 ---
@@ -854,17 +846,16 @@ Nothig differs from the [In-memory data stream encryption/decryption](#in-memory
 ##### Encrypt a file
 
 ```ts
-import fs from 'fs'
+import fs from "fs";
 
-const password = 'my-very-strong-password'
+const password = "my-very-strong-password";
 
 // input where raw data to encrypt is read
-const input = fs.createReadStream( 'my-very-large-top-secret-file.pdf' )
+const input = fs.createReadStream("my-very-large-top-secret-file.pdf");
 // output where encrypted data is written
-const output = fs.createWriteStream( 'my-very-large-top-secret-file.encrypted' )
+const output = fs.createWriteStream("my-very-large-top-secret-file.encrypted");
 // encrypt
-await Cipher.streamEncrypt( password, { input, output } )
-  .encrypt()
+await Cipher.streamEncrypt(password, { input, output }).encrypt();
 ```
 
 ---
@@ -872,17 +863,19 @@ await Cipher.streamEncrypt( password, { input, output } )
 ##### Decrypt a file
 
 ```ts
-import fs from 'fs'
+import fs from "fs";
 
-const password = 'my-very-strong-password'
+const password = "my-very-strong-password";
 
 // input where encrypted data is read
-const input = fs.createReadStream( 'my-very-large-top-secret-file.encrypted' )
+const input = fs.createReadStream("my-very-large-top-secret-file.encrypted");
 // output where decrypted data is written
-const output = fs.createWriteStream( 'my-very-large-top-secret-file-decrypted.pdf' )
+const output = fs.createWriteStream(
+  "my-very-large-top-secret-file-decrypted.pdf"
+);
 // decrypt
-const { decrypt } = await Cipher.streamDecrypt( password, { input, output } )
-await decrypt()
+const { decrypt } = await Cipher.streamDecrypt(password, { input, output });
+await decrypt();
 ```
 
 ---
@@ -894,43 +887,51 @@ Nothig differs from the [In-memory data stream with hybrid encryption/decryption
 ##### Keypair
 
 ```ts
-const password  = 'my-very-strong-password'
+const password = "my-very-strong-password";
 
 /** RSA modulus length is required for proper key extraction during decryption process. */
-const rsaKeyLength = 512 // bytes
-const keyPair = crypto.generateKeyPairSync( 'rsa', {
-  modulusLength       : rsaKeyLength * 8, // 4096 bits
-  publicKeyEncoding   : { type: 'spki', format: 'pem' },
-  privateKeyEncoding  : { type: 'pkcs1', format: 'pem' },
-} )
-
+const rsaKeyLength = 512; // bytes
+const keyPair = crypto.generateKeyPairSync("rsa", {
+  modulusLength: rsaKeyLength * 8, // 4096 bits
+  publicKeyEncoding: { type: "spki", format: "pem" },
+  privateKeyEncoding: { type: "pkcs1", format: "pem" },
+});
 
 // or you can optionally set a custom passphrase
-const keyPair = crypto.generateKeyPairSync( 'rsa', {
-  modulusLength       : rsaKeyLength * 8, // 4096 bits
-  publicKeyEncoding   : { type: 'spki', format: 'pem' },
-  privateKeyEncoding  : { type: 'pkcs1', format: 'pem', passphrase: password, cipher: 'aes-256-cbc' },
-} )
+const keyPair = crypto.generateKeyPairSync("rsa", {
+  modulusLength: rsaKeyLength * 8, // 4096 bits
+  publicKeyEncoding: { type: "spki", format: "pem" },
+  privateKeyEncoding: {
+    type: "pkcs1",
+    format: "pem",
+    passphrase: password,
+    cipher: "aes-256-cbc",
+  },
+});
 ```
 
 ##### Encrypt a file
 
 ```ts
-import fs from 'fs'
+import fs from "fs";
 
-const password = 'my-very-strong-password'
+const password = "my-very-strong-password";
 
 // input where raw data to encrypt is read
-const input = fs.createReadStream( 'my-very-large-top-secret-file.pdf' )
+const input = fs.createReadStream("my-very-large-top-secret-file.pdf");
 // output where encrypted data is written
-const output = fs.createWriteStream( 'my-very-large-top-secret-file.encrypted' )
+const output = fs.createWriteStream("my-very-large-top-secret-file.encrypted");
 // encrypt
-const { encrypt } = Cipher.hybridEncrypt( password, {
-  key       : keyPair.publicKey,
-  padding   : crypto.constants.RSA_PKCS1_OAEP_PADDING,
-  oaepHash  : 'SHA-256',
-}, { input, output } )
-await encrypt()
+const { encrypt } = Cipher.hybridEncrypt(
+  password,
+  {
+    key: keyPair.publicKey,
+    padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+    oaepHash: "SHA-256",
+  },
+  { input, output }
+);
+await encrypt();
 ```
 
 ---
@@ -938,23 +939,26 @@ await encrypt()
 ##### Decrypt a file
 
 ```ts
-import fs from 'fs'
+import fs from "fs";
 
-const password = 'my-very-strong-password'
+const password = "my-very-strong-password";
 
 // input where encrypted data is read
-const input = fs.createReadStream( 'my-very-large-top-secret-file.encrypted' )
+const input = fs.createReadStream("my-very-large-top-secret-file.encrypted");
 // output where decrypted data is written
-const output = fs.createWriteStream( 'my-very-large-top-secret-file-decrypted.pdf' )
+const output = fs.createWriteStream(
+  "my-very-large-top-secret-file-decrypted.pdf"
+);
 // decrypt
 const { decrypt } = await Cipher.hybridDecrypt(
   {
-    key       : keyPair.privateKey,
+    key: keyPair.privateKey,
     passphrase: password, // optional passhrase (required if set while generating keypair).
-    padding   : crypto.constants.RSA_PKCS1_OAEP_PADDING,
-    oaepHash  : 'SHA-256',
-  }, { input, output, rsaKeyLength }
-)
+    padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+    oaepHash: "SHA-256",
+  },
+  { input, output, rsaKeyLength }
+);
 ```
 
 ---

@@ -82,8 +82,8 @@ export namespace Cph
 			 */
 			export interface EncryptReturnType
 			{
-				/** The `crypto.Cipher` instance. */
-				cipher: crypto.Cipher
+				/** The `crypto.Cipheriv` instance. */
+				cipher: crypto.Cipheriv
 				/** The actual `encrypt` callback that must be called and awaited in order to start the encryption process. */
 				encrypt	: () => Promise<void>
 			}
@@ -112,8 +112,8 @@ export namespace Cph
 
 			export interface DecryptReturnType
 			{
-				/** The `crypto.Decipher` instance. */
-				decipher: crypto.Decipher
+				/** The `crypto.Decipheriv` instance. */
+				decipher: crypto.Decipheriv
 				/** The actual `decrypt` callback that must be called and awaited in order to start the decryption process. */
 				decrypt	: () => Promise<void>
 			}

@@ -14,11 +14,11 @@ describe( 'Cipher - In-Memory Hybrid Encryption/Decryption', () => {
 	} )
 
 
-	describe( 'Cipher.hybridEncrypt()', () => {
+	describe( 'Cipher.HybridEncrypt()', () => {
 
 		it( 'encrpyts the given data', () => {
 			
-			expect( () => Cipher.hybridEncrypt( dataToEncrypt, keypair.publicKey ) )
+			expect( () => Cipher.HybridEncrypt( dataToEncrypt, keypair.publicKey ) )
 				.not.toThrow()
 				
 		} )
@@ -26,7 +26,7 @@ describe( 'Cipher - In-Memory Hybrid Encryption/Decryption', () => {
 
 		it( 'returns encrypted key length', () => {
 
-			const encrypted = Cipher.hybridEncrypt( dataToEncrypt, keypair.publicKey )
+			const encrypted = Cipher.HybridEncrypt( dataToEncrypt, keypair.publicKey )
 			
 			expect( readUint16BE( encrypted.subarray( 0, 2 ) ) )
 				.toBe( 256 )
@@ -36,7 +36,7 @@ describe( 'Cipher - In-Memory Hybrid Encryption/Decryption', () => {
 		
 		it( 'embed encrypted key in payload', () => {
 
-			const encrypted		= Cipher.hybridEncrypt( dataToEncrypt, keypair.publicKey )
+			const encrypted		= Cipher.HybridEncrypt( dataToEncrypt, keypair.publicKey )
 			const keyLength		= readUint16BE( encrypted.subarray( 0, 2 ) )
 			const encryptedKey	= encrypted.subarray( 2, 2 + keyLength )
 
@@ -49,12 +49,12 @@ describe( 'Cipher - In-Memory Hybrid Encryption/Decryption', () => {
 	} )
 	
 	
-	describe( 'Cipher.hybridDecrypt()', () => {
+	describe( 'Cipher.HybridDecrypt()', () => {
 	
 		it( 'decrypts data', () => {
 
-			const encrypted = Cipher.hybridEncrypt( dataToEncrypt, keypair.publicKey )
-			const decrypted = Cipher.hybridDecrypt( encrypted, keypair.privateKey )
+			const encrypted = Cipher.HybridEncrypt( dataToEncrypt, keypair.publicKey )
+			const decrypted = Cipher.HybridDecrypt( encrypted, keypair.privateKey )
 	
 			expect( decrypted.toString() ).toBe( dataToEncrypt )
 
@@ -71,8 +71,8 @@ describe( 'Cipher - In-Memory Hybrid Encryption/Decryption', () => {
 			} )
 
 
-			const encrypted = Cipher.hybridEncrypt( dataToEncrypt, keypair.publicKey )
-			const decrypted = Cipher.hybridDecrypt( encrypted, {
+			const encrypted = Cipher.HybridEncrypt( dataToEncrypt, keypair.publicKey )
+			const decrypted = Cipher.HybridDecrypt( encrypted, {
 				key			: keypair.privateKey,
 				passphrase	: password,
 			} )

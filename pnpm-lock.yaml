@@ -11,6 +11,9 @@ importers:
       '@alessiofrittoli/crypto-buffer':
         specifier: ^3.9.0
         version: 3.9.0
+      '@alessiofrittoli/math-utils':
+        specifier: ^1.17.0
+        version: 1.17.0
     devDependencies:
       '@alessiofrittoli/node-scripts':
         specifier: ^3.3.0
@@ -69,8 +72,14 @@ packages:
   '@alessiofrittoli/abort-controller@0.1.0':
     resolution: {integrity: sha512-bVx5XvRT33AOqFI7yvelOEsIVrs6myMzQYQujCjAX5DDRYOA0P9YuR/dVSZmxDLOs5ZKzD4z/6+zKJt1imvtEw==}
 
+  '@alessiofrittoli/chain-functions@2.5.0':
+    resolution: {integrity: sha512-T880cNaHMIU11vj3Qn4gEusew1ZcuCoWNEgwX9RzlGNmElxW/Td580+kT7y2QXO1BWBlXsvHRhbRMPIpAyTTYw==}
+
   '@alessiofrittoli/crypto-buffer@3.9.0':
     resolution: {integrity: sha512-1Ml8VgKxgqSRlZ8SUzFcqUOH9EwGh0Fc3ycbEY1CteylTjx1/xN9C9zI1bK2B87nDd+Ll81Le+4Ees9eB1NXcA==}
+
+  '@alessiofrittoli/date-utils@4.1.0':
+    resolution: {integrity: sha512-87yQ/LrY63pCUIj6MUfAeGY2RGQG9eRKvfR7yc8cF59oiXxAuHz+qUbqCiH9dmzwtwCDtOjInEoeVYR8nKNyMA==}
 
   '@alessiofrittoli/event-emitter@1.6.0':
     resolution: {integrity: sha512-Fu1VZGUbxjZfhwUzoAia0iXQwbjSID17VcsASjXFua1+oxqKAjBofayLZ8BMRGsGwHNeyycax0fSwZd2SI6uzA==}
@@ -78,8 +87,23 @@ packages:
   '@alessiofrittoli/exception@3.5.0':
     resolution: {integrity: sha512-8WGEiJCr9zFgPzXvTl5Sgh+e1bBldGfMma4EGIa+yLeHpgmsS+zQ8d7woh2YU/yN65DoKGHPKTArWLAvnEwANg==}
 
+  '@alessiofrittoli/math-utils@1.17.0':
+    resolution: {integrity: sha512-WMvxBljj2Ahyv8xPyiy1lESUO5Poq9edYr1pZS+KawodDU2k+d0hWAz7KDQymCCzAz4YkuLkr0CDl0k85t0RhA==}
+
+  '@alessiofrittoli/node-scripts@3.2.0':
+    resolution: {integrity: sha512-2hjjsUpaNFUQsVIZR0AOkYPMPAuFtgr1zQDDLJucqGXljLy4fVXViLFiVioXg6RwJgOVs/HDjAmqf7WZuah5tQ==}
+
   '@alessiofrittoli/node-scripts@3.3.0':
     resolution: {integrity: sha512-09LXPw+qF0DIlSeqAtn06VaMLYpRZrgdG09JRRaSYjUhNszOv3zesROQvwlIlwrBRjRd2r37R/yu/4FflcwgCA==}
+
+  '@alessiofrittoli/type-utils@1.9.0':
+    resolution: {integrity: sha512-YtbIEvMc3i8KrY22a84WJXa+qWEyr0POpVsNhWIZMU3c23BX1AHcrdFTdYac5h3apdhu/uRrSUDjOkGO/Vie0Q==}
+
+  '@alessiofrittoli/url-utils@3.7.1':
+    resolution: {integrity: sha512-d4IY0H2lQoXt8Iq3riD7nYvfa+VEAnkBh2R9mvZNxbqQo0TmGc32+mf0w+FKviZ/xth2JhusVoSG804dHXHIdg==}
+
+  '@alessiofrittoli/web-utils@1.19.0':
+    resolution: {integrity: sha512-P7ckpkGJGty9uyA16GBTdpn910sjI5wZrJtpde6bCRdQkgvxlpi0ThwzQGza/IVXf5SDnWdiCTpt5sfIi7OLjQ==}
 
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
@@ -2486,17 +2510,51 @@ snapshots:
     dependencies:
       '@alessiofrittoli/exception': 3.5.0
 
+  '@alessiofrittoli/chain-functions@2.5.0': {}
+
   '@alessiofrittoli/crypto-buffer@3.9.0': {}
+
+  '@alessiofrittoli/date-utils@4.1.0':
+    dependencies:
+      '@alessiofrittoli/math-utils': 1.17.0
+      '@alessiofrittoli/type-utils': 1.9.0
 
   '@alessiofrittoli/event-emitter@1.6.0': {}
 
   '@alessiofrittoli/exception@3.5.0': {}
+
+  '@alessiofrittoli/math-utils@1.17.0':
+    dependencies:
+      '@alessiofrittoli/web-utils': 1.19.0
+
+  '@alessiofrittoli/node-scripts@3.2.0':
+    dependencies:
+      '@alessiofrittoli/abort-controller': 0.1.0
+      '@alessiofrittoli/event-emitter': 1.6.0
+      '@alessiofrittoli/exception': 3.5.0
+      '@alessiofrittoli/type-utils': 1.9.0
 
   '@alessiofrittoli/node-scripts@3.3.0':
     dependencies:
       '@alessiofrittoli/abort-controller': 0.1.0
       '@alessiofrittoli/event-emitter': 1.6.0
       '@alessiofrittoli/exception': 3.5.0
+
+  '@alessiofrittoli/type-utils@1.9.0':
+    dependencies:
+      '@alessiofrittoli/chain-functions': 2.5.0
+      '@alessiofrittoli/node-scripts': 3.2.0
+
+  '@alessiofrittoli/url-utils@3.7.1':
+    dependencies:
+      '@alessiofrittoli/web-utils': 1.19.0
+
+  '@alessiofrittoli/web-utils@1.19.0':
+    dependencies:
+      '@alessiofrittoli/date-utils': 4.1.0
+      '@alessiofrittoli/math-utils': 1.17.0
+      '@alessiofrittoli/type-utils': 1.9.0
+      '@alessiofrittoli/url-utils': 3.7.1
 
   '@ampproject/remapping@2.3.0':
     dependencies:

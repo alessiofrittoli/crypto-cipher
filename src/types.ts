@@ -36,6 +36,7 @@ export namespace Cph
 		aad?: CoerceToUint8ArrayInput
 		/** The `AAD` length. Minimum: `16`, Maximum: `128`. Default: `32`. */
 		aadLength?: number
+		secret?: CoerceToUint8ArrayInput
 	}
 
 
@@ -51,7 +52,7 @@ export namespace Cph
 		aad?: Uint8Array
 	}
 
-
+	
 	export namespace Stream
 	{
 		export namespace Symmetric
@@ -139,7 +140,11 @@ export namespace Cph
 			 */
 			export interface DecryptOptions extends Cph.Stream.Symmetric.DecryptOptions
 			{
-				/** The RSA key length in bytes used while encrypting data. This is used to properly extract the encrypted Cipher Key and Initialization Vector. */
+				/**
+				 * The RSA key length in bytes used while encrypting data. This is used to properly extract the encrypted Cipher Key and Initialization Vector.
+				 * 
+				 * @deprecated This is no longer needed. Key length is now stored in the encrypted data payload.
+				 */
 				rsaKeyLength: number
 			}
 			

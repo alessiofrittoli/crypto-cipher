@@ -39,7 +39,7 @@ const encryptMockData = ( secret: CoerceToUint8ArrayInput, data: CoerceToUint8Ar
 describe( 'Cipher.resolveOptions()', () => {
 
 	it( 'return resolved default options', () => {
-		const options = Cipher.resolveOptions()
+		const options = Cipher.ResolveOptions()
 		expect( options.algorithm ).toBe( Cipher.DEFAULT_ALGORITHM.buffer )
 		expect( options.salt ).toBe( Cipher.SALT_LENGTH.default )
 		expect( options.iv ).toBe( Cipher.IV_LENGTH.default )
@@ -50,10 +50,10 @@ describe( 'Cipher.resolveOptions()', () => {
 } )
 
 
-describe( 'Cipher.newKeyIV()', () => {
+describe( 'Cipher.NewKeyIV()', () => {
 
 	it( 'generates a new Key and IV with default options', () => {
-		const { options, Key, IV, AAD, salt } = Cipher.newKeyIV( password )
+		const { options, Key, IV, AAD, salt } = Cipher.NewKeyIV( password )
 		expect( options.algorithm ).toBe( Cipher.DEFAULT_ALGORITHM.buffer )
 		expect( options.salt ).toBe( Cipher.SALT_LENGTH.default )
 		expect( options.iv ).toBe( Cipher.IV_LENGTH.default )
@@ -68,10 +68,10 @@ describe( 'Cipher.newKeyIV()', () => {
 } )
 
 
-describe( 'Cipher.getIVLength()', () => {
+describe( 'Cipher.GetIVLength()', () => {
 
 	it( 'returns the Initialization Vector length using default options', () => {
-		expect( Cipher[ 'getIVLength' ]() )
+		expect( Cipher.GetIVLength() )
 			.toBe( 16 )
 	} )
 

@@ -1,4 +1,7 @@
 import crypto from 'crypto'
+import { Transform } from 'stream'
+import type { Readable } from 'stream'
+
 import { clamp } from '@alessiofrittoli/math-utils'
 import {
 	coerceToUint8Array,
@@ -6,7 +9,7 @@ import {
 	readUint16BE,
 	writeUint16BE,
 } from '@alessiofrittoli/crypto-buffer'
-import { Cph } from '@/new/types'
+import type { Cph } from '@/new/types'
 
 
 export class Cipher
@@ -244,7 +247,7 @@ export class Cipher
 	/**
 	 * Decrypt in-memory data using hybrid decryption.
 	 * 
-	 * ⚠️ This is not suitable for large data. Use {@link Cipher.HybridStreamDecrypt()} method for large data encryption.
+	 * ⚠️ This is not suitable for large data. Use {@link Cipher.stream.HybridDecrypt()} method for large data encryption.
 	 * 
 	 * @param	data		The encrypted data to decrypt.
 	 * @param	privateKey	The private key.
@@ -254,7 +257,7 @@ export class Cipher
 	 */
 	static HybridDecrypt(
 		data		: CoerceToUint8ArrayInput,
-		privateKey	: crypto.KeyLike | { key: crypto.KeyLike, passphrase?: string },
+		privateKey	: Cph.PrivateKey,
 		options?	: Cph.Options,
 	)
 	{
@@ -263,12 +266,9 @@ export class Cipher
 		const rsaKeyLength		= readUint16BE( dataBuff.subarray( 0, 2 ) )
 		const encryptedKey		= dataBuff.subarray( 2, 2 + rsaKeyLength )
 		const encryptedData		= dataBuff.subarray( 2 + rsaKeyLength )
-		const rsaPrivateKey		= (
-			typeof privateKey === 'object' && 'key' in privateKey ? privateKey.key : privateKey
-		)
-		const passphrase		= (
-			typeof privateKey === 'object' && 'passphrase' in privateKey ? privateKey.passphrase : undefined
-		)
+		const {
+			privateKey: rsaPrivateKey, passphrase
+		} = Cipher.GetPrivateKey( privateKey )
 
 		const decryptedKey = (
 			crypto.privateDecrypt( {
@@ -281,6 +281,259 @@ export class Cipher
 
 		return Cipher.Decrypt( encryptedData, decryptedKey, options )
 		
+	}
+
+
+	/**
+	 * Cipher stream based functions.
+	 * 
+	 */
+	static stream = {
+		Encrypt()
+		{
+
+		},
+		Decrypt()
+		{
+
+		},
+		/**
+		 * Encrypt in-memory stream using hybrid encryption.
+		 * 
+		 * @param	publicKey	The public key.
+		 * @param	options		An object defining required options. See {@link Cph.Stream.EncryptOptions} for more info.
+		 * 
+		 * @returns	A new Promise that resolves `void` once stream is completed.
+		 */
+		HybridEncrypt(
+			publicKey	: crypto.KeyLike,
+			options		: Cph.Stream.EncryptOptions,
+		) {
+
+			options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
+
+			const {
+				Key, IV,
+				options: { algorithm, input, output },
+			} = Cipher.NewKeyIV<Cph.Stream.EncryptResolvedOptions>( options )
+
+			const encryptedKey = (
+				crypto.publicEncrypt( {
+					key			: publicKey,
+					padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+					oaepHash	: 'sha256',
+				}, Buffer.concat( [ Key, IV ] ) )
+			)
+	
+			const cipher = crypto.createCipheriv( algorithm, Key, IV )
+			
+			return Cipher.stream.Cipher( {
+				cipher, encryptedKey, input, output
+			} )
+
+		},
+		/**
+		 * Decrypt stream data using hybrid decryption.
+		 * 
+		 * @param	privateKey	The private key.
+		 * @param	options		An object defining required options. See {@link Cph.Stream.DecryptOptions} for more info.
+		 * 
+		 * @returns	A new Promise that resolves `void` once stream is completed.
+		 */
+		HybridDecrypt(
+			privateKey	: Cph.PrivateKey,
+			options		: Cph.Stream.DecryptOptions,
+		) {
+
+			const { input, output } = options
+
+			const { keyLength, algorithm } = (
+				Cipher.GetKeyLength( options.algorithm || Cipher.DEFAULT_ALGORITHM.stream )
+			)
+
+			return (
+				Cipher.stream.ExtractKeyLength( input )
+					.then( Cipher.stream.ExtractKeyIV )
+					.then( ( [ EncryptedKeyIV, input ] ) => (
+						{
+							...( Cipher.ExtractKey( {
+								privateKey, EncryptedKeyIV, keyLength,
+							} ) ),
+							input,
+						}
+					) )
+					.then( ( { Key, IV, input } ) => {
+						const decipher = crypto.createDecipheriv( algorithm, Key, IV )
+
+						return Cipher.stream.Decipher(
+							{ decipher, input, output }
+						)
+					} )
+			)
+
+		},
+		/**
+		 * Handle pipe flow to encrypt a Stream.
+		 * 
+		 * @param	options Required parameters.
+		 * @returns A new Promise that resolves `void` once stream is completed.
+		 */
+		Cipher( options: Cph.Stream.CipherOptions ) {
+			const {
+				cipher, encryptedKey, input, output
+			} = options
+
+			return (
+				new Promise<void>( ( resolve, reject ) => {
+					cipher.on( 'error', reject )
+					input.on( 'error', reject )
+					output.on( 'error', reject )
+					output.on( 'finish', resolve )
+			
+					output.write( writeUint16BE( encryptedKey.length ) )
+					output.write( encryptedKey )
+					input.pipe( cipher ).pipe( output )
+				} )
+			)
+		},
+		/**
+		 * Handle pipe flow to decrypt a Stream.
+		 * 
+		 * @param	options Required parameters.
+		 * @returns A new Promise that resolves `void` once stream is completed.
+		 */
+		Decipher( options: Cph.Stream.DecipherOptions ) {
+			const {
+				decipher, input, output,
+			} = options
+
+			return (
+				new Promise<void>( ( resolve, reject ) => {
+					decipher.on( 'error', reject )
+					input.on( 'error', reject )
+					output.on( 'error', reject )
+					output.on( 'finish', resolve )
+
+					input.pipe( decipher ).pipe( output )
+				} )
+			)
+		},
+		ExtractKeyLength( input: Readable ): Promise<Cph.Stream.ExtractedKeyLength> {
+			return (
+				Cipher.stream.ExtractBytesFromReadable( input, 2 )
+					.then( ( [ KeyLength, output ] ) => [
+						readUint16BE( KeyLength ), output
+					] )
+			)
+		},
+		ExtractKeyIV( [ KeyLength, input ]: Cph.Stream.ExtractedKeyLength ) {
+			return (
+				Cipher.stream.ExtractBytesFromReadable( input, KeyLength )
+			)
+		},
+		ExtractBytesFromReadable( input: Readable, bytes: number ) {
+			return (
+				new Promise<Cph.Stream.ExtractedBytes>( ( resolve, reject ) => {
+	
+					let DataRead	= Buffer.alloc( 0 )
+					let bytesRead	= 0
+					let resolved	= false
+	
+					const transform = new Transform( {
+						transform( chunk: Buffer, encoding, callback ) {
+	
+							if ( bytesRead < bytes ) {
+	
+								DataRead			= Buffer.concat( [ DataRead, chunk ] )
+								bytesRead			+= chunk.length
+								const hasByteLoss	= DataRead.length > bytes
+								const bytesLoss		= hasByteLoss ? DataRead.subarray( bytes ) : undefined
+								DataRead			= DataRead.subarray( 0, bytes )
+								
+								if ( bytesLoss ) {								
+									/**
+									 * Send to next pipe desitination byte loss.
+									 * 
+									 */
+									this.push( bytesLoss, encoding )
+								}
+	
+								if ( ! resolved && DataRead.length === bytes ) {
+									resolved = true
+									resolve( [ DataRead, this ] )
+								}
+	
+								return callback()
+							}
+	
+							if ( ! resolved && DataRead.length === bytes ) {
+								resolved = true
+								resolve( [ DataRead, this ] )
+							}
+	
+							bytesRead += chunk.length
+	
+							this.push( chunk, encoding )
+	
+							return callback()
+						},
+						final( callback ) {
+							if ( DataRead.length < bytes ) {
+								return callback(
+									new Error( 'The extracted KeyLength Buffer length is less than the expected length.' )
+								)
+							}
+							return callback()
+						},
+					} )
+	
+					transform.on( 'error', reject )
+	
+					input.on( 'error', error => {
+						transform.destroy( error )
+						reject( error )
+					} )
+	
+					input.pipe( transform )
+	
+				} )
+			)
+		},
+	}
+
+
+	static ExtractKey( options: Cph.Decrypt.ExtractKeyOptions )
+	{
+		const { privateKey, EncryptedKeyIV, keyLength } = options
+
+		const {
+			privateKey: rsaPrivateKey, passphrase
+		} = Cipher.GetPrivateKey( privateKey )
+
+		const KeyIV = crypto.privateDecrypt( {
+			key			: rsaPrivateKey,
+			passphrase	: passphrase,
+			padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+			oaepHash	: 'sha256',
+		}, EncryptedKeyIV )
+
+		const Key	= KeyIV.subarray( 0, keyLength )
+		const IV	= KeyIV.subarray( keyLength )
+
+		return { Key, IV }
+	}
+
+	
+	private static GetPrivateKey( privateKey: Cph.PrivateKey )
+	{
+		const rsaPrivateKey		= (
+			typeof privateKey === 'object' && 'key' in privateKey ? privateKey.key : privateKey
+		)
+		const passphrase		= (
+			typeof privateKey === 'object' && 'passphrase' in privateKey ? privateKey.passphrase : undefined
+		)
+
+		return { privateKey: rsaPrivateKey, passphrase }
 	}
 
 

@@ -1,6 +1,10 @@
 import type {
-	CipherCCMTypes, CipherGCMTypes, CipherOCBTypes, CipherChaCha20Poly1305Types
+	CipherCCMTypes, CipherGCMTypes, CipherOCBTypes, CipherChaCha20Poly1305Types,
+	KeyLike,
+	Cipheriv,
+	Decipheriv
 } from 'crypto'
+import type { Readable, Transform, Writable } from 'stream'
 import type { CoerceToUint8ArrayInput } from '@alessiofrittoli/crypto-buffer'
 
 
@@ -60,5 +64,73 @@ export namespace Cph
 		/** The Additional Authentication Data. */
 		aad?: Uint8Array
 	}
+
+
+	export type PrivateKey = KeyLike | { key: KeyLike, passphrase?: string }
 	
+	export namespace Stream
+	{
+		/**
+		 * Options for encrypting a stream.
+		 * 
+		 */
+		export interface EncryptOptions extends Cph.Options<Cph.CBCTypes>
+		{
+			/** The `Readable` Stream from where raw data to encrypt is read. */
+			input: Readable
+			/** The `Writable` Stream where encrypted data is written. */
+			output: Writable
+		}
+
+
+		/**
+		 * Options for decrypting a stream.
+		 * 
+		 */
+		export type DecryptOptions = Cph.Stream.EncryptOptions
+
+		/**
+		 * Resolved Stream Encrypt options (symmetric and hybrid).
+		 */
+		export type EncryptResolvedOptions = (
+			Cph.ResolvedOptions
+			& Required<Cph.Stream.EncryptOptions>
+		)
+
+		/**
+		 * INTERNAL USE ONLY
+		 */
+		export interface CipherOptions
+		{
+			cipher		: Cipheriv
+			encryptedKey: Buffer
+			input		: Readable
+			output		: Writable
+		}
+
+		/**
+		 * INTERNAL USE ONLY
+		 */
+		export interface DecipherOptions
+		{
+			decipher	: Decipheriv
+			input		: Readable
+			output		: Writable
+		}
+
+
+		export type ExtractedKeyLength = [ KeyLength: number, input: Transform ]
+		export type ExtractedBytes = [ DataRead: Buffer, input: Transform ]
+	}
+
+
+	export namespace Decrypt
+	{
+		export interface ExtractKeyOptions
+		{
+			privateKey: Cph.PrivateKey
+			EncryptedKeyIV: Buffer
+			keyLength: number
+		}
+	}
 }

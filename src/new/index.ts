@@ -1,6 +1,11 @@
 import crypto from 'crypto'
 import { clamp } from '@alessiofrittoli/math-utils'
-import { coerceToUint8Array, CoerceToUint8ArrayInput } from '@alessiofrittoli/crypto-buffer'
+import {
+	coerceToUint8Array,
+	CoerceToUint8ArrayInput,
+	readUint16BE,
+	writeUint16BE,
+} from '@alessiofrittoli/crypto-buffer'
 import { Cph } from '@/new/types'
 
 
@@ -132,7 +137,7 @@ export class Cipher
 	/**
 	 * Decrypt in-memory data buffer.
 	 *
-	 * ⚠️ This is not suitable for large data. Use {@link Cipher.streamDecrypt()} or {@link Cipher.hybridStreamDecrypt()} methods for large data decryption.
+	 * ⚠️ This is not suitable for large data. Use {@link Cipher.StreamDecrypt()} or {@link Cipher.HybridStreamDecrypt()} methods for large data decryption.
 	 *
 	 * @param	data	The data to decrypt.
 	 * @param	secret	The secret key used to decrypt the `data`.
@@ -196,6 +201,86 @@ export class Cipher
 		return (
 			Buffer.concat( [ decipher.update( _data ), decipher.final() ] )
 		)
+	}
+
+
+	/**
+	 * Encrypt in-memory data using hybrid encryption.
+	 * 
+	 * ⚠️ This is not suitable for large data. Use {@link Cipher.HybridStreamEncrypt()} method for large data encryption.
+	 * 
+	 * @param	data		The data to encrypt.
+	 * @param	publicKey	The public key.
+	 * @param	options		( Optional ) Additional options.
+	 * 
+	 * @returns	The encrypted result Buffer.
+	 */
+	static HybridEncrypt(
+		data		: CoerceToUint8ArrayInput,
+		publicKey	: crypto.KeyLike,
+		options?	: Cph.Options,
+	)
+	{
+
+		const Key = crypto.randomBytes( 32 )
+
+		const EncryptedKey = (
+			crypto.publicEncrypt( {
+				key			: publicKey,
+				padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+				oaepHash	: 'sha256',
+			}, Key )
+		)
+
+		return Buffer.concat( [
+			writeUint16BE( EncryptedKey.length ),
+			EncryptedKey,
+			Cipher.Encrypt( data, Key, options )
+		] )
+
+	}
+	
+	
+	/**
+	 * Decrypt in-memory data using hybrid decryption.
+	 * 
+	 * ⚠️ This is not suitable for large data. Use {@link Cipher.HybridStreamDecrypt()} method for large data encryption.
+	 * 
+	 * @param	data		The encrypted data to decrypt.
+	 * @param	privateKey	The private key.
+	 * @param	options		( Optional ) Additional options.
+	 * 
+	 * @returns	The encrypted result Buffer.
+	 */
+	static HybridDecrypt(
+		data		: CoerceToUint8ArrayInput,
+		privateKey	: crypto.KeyLike | { key: crypto.KeyLike, passphrase?: string },
+		options?	: Cph.Options,
+	)
+	{
+
+		const dataBuff			= Buffer.from( coerceToUint8Array( data ) )
+		const rsaKeyLength		= readUint16BE( dataBuff.subarray( 0, 2 ) )
+		const encryptedKey		= dataBuff.subarray( 2, 2 + rsaKeyLength )
+		const encryptedData		= dataBuff.subarray( 2 + rsaKeyLength )
+		const rsaPrivateKey		= (
+			typeof privateKey === 'object' && 'key' in privateKey ? privateKey.key : privateKey
+		)
+		const passphrase		= (
+			typeof privateKey === 'object' && 'passphrase' in privateKey ? privateKey.passphrase : undefined
+		)
+
+		const decryptedKey = (
+			crypto.privateDecrypt( {
+				key			: rsaPrivateKey,
+				passphrase	: passphrase,
+				padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+				oaepHash	: 'sha256',
+			}, encryptedKey )
+		)
+
+		return Cipher.Decrypt( encryptedData, decryptedKey, options )
+		
 	}
 
 

@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { readUint16BE } from '@alessiofrittoli/crypto-buffer/conversion'
-import { Cipher } from '@/new'
+import { Cipher } from '@/index'
 
 const dataToEncrypt	= 'my TOP-SECRET message'
 

@@ -1,9 +1,16 @@
-import type crypto from 'crypto'
-import type { Readable, Writable } from 'stream'
+import type {
+	CipherCCMTypes, CipherGCMTypes, CipherOCBTypes, CipherChaCha20Poly1305Types,
+	KeyLike,
+	Cipheriv,
+	Decipheriv
+} from 'crypto'
+import type { Readable, Transform, Writable } from 'stream'
 import type { CoerceToUint8ArrayInput } from '@alessiofrittoli/crypto-buffer'
+
 
 /**
  * Cipher types.
+ * 
  */
 export namespace Cph
 {
@@ -13,11 +20,11 @@ export namespace Cph
 	
 	/** Cipher supported algorithm types. */
 	export type AesAlgorithm = (
-		| crypto.CipherCCMTypes | crypto.CipherGCMTypes
-		| crypto.CipherOCBTypes | Cph.CBCTypes | crypto.CipherChaCha20Poly1305Types
+		| CipherCCMTypes | CipherGCMTypes
+		| CipherOCBTypes | Cph.CBCTypes | CipherChaCha20Poly1305Types
 	)
-	
-	
+
+
 	/**
 	 * Common Cipher options.
 	 * @template T The AES algorithm type.
@@ -36,6 +43,11 @@ export namespace Cph
 		aad?: CoerceToUint8ArrayInput
 		/** The `AAD` length. Minimum: `16`, Maximum: `128`. Default: `32`. */
 		aadLength?: number
+	}
+
+
+	export interface NewKeyIVOptions<T extends Cph.AesAlgorithm = Cph.AesAlgorithm> extends Cph.Options<T>
+	{
 		secret?: CoerceToUint8ArrayInput
 	}
 
@@ -49,126 +61,87 @@ export namespace Cph
 	{
 		/** The symmetric key length. */
 		length: number
+		/** The Additional Authentication Data. */
 		aad?: Uint8Array
 	}
 
+
+	export type PrivateKey = KeyLike | { key: KeyLike, passphrase?: string }
 	
 	export namespace Stream
 	{
-		export namespace Symmetric
+		/**
+		 * Options for encrypting a stream.
+		 * 
+		 */
+		export interface EncryptOptions extends Cph.Options<Cph.CBCTypes>
 		{
-			/**
-			 * Options for encrypting a stream.
-			 */
-			export interface EncryptOptions extends Cph.Options<Cph.CBCTypes>
-			{
-				/** The `Readable` Stream from where raw data to encrypt is read. */
-				input: Readable
-				/** The `Writable` Stream where encrypted data is written. */
-				output: Writable
-			}
-
-
-			/**
-			 * Resolved Stream Encrypt options (symmetric and hybrid).
-			 */
-			export type EncryptResolvedOptions = (
-				Cph.ResolvedOptions
-				& Required<Cph.Stream.Symmetric.EncryptOptions>
-			)
-
-
-			/**
-			 * Returnign object from `Cipher.encryptStream()` method.
-			 */
-			export interface EncryptReturnType
-			{
-				/** The `crypto.Cipheriv` instance. */
-				cipher: crypto.Cipheriv
-				/** The actual `encrypt` callback that must be called and awaited in order to start the encryption process. */
-				encrypt	: () => Promise<void>
-			}
-
-
-			/**
-			 * Options for decrypting a stream (symmetric).
-			 */
-			export interface DecryptOptions extends Cph.Stream.Symmetric.EncryptOptions
-			{
-				/** The `Readable` Stream from where encrypted data is read. */
-				input: Readable
-				/** The `Writable` Stream where decrypted data is written. */
-				output: Writable
-			}
-			
-			
-			/**
-			 * Resolved Stream Decrypt options (symmetric).
-			 */
-			export type DecryptResolvedOptions = (
-				Cph.ResolvedOptions
-				& Required<Cph.Stream.Symmetric.DecryptOptions>
-			)
-
-
-			export interface DecryptReturnType
-			{
-				/** The `crypto.Decipheriv` instance. */
-				decipher: crypto.Decipheriv
-				/** The actual `decrypt` callback that must be called and awaited in order to start the decryption process. */
-				decrypt	: () => Promise<void>
-			}
+			/** The `Readable` Stream from where raw data to encrypt is read. */
+			input: Readable
+			/** The `Writable` Stream where encrypted data is written. */
+			output: Writable
 		}
 
 
-		export namespace Hybrid
+		/**
+		 * Options for decrypting a stream.
+		 * 
+		 */
+		export type DecryptOptions = Cph.Stream.EncryptOptions
+
+		/**
+		 * Resolved Stream Encrypt options.
+		 * 
+		 */
+		export type EncryptResolvedOptions = (
+			Cph.ResolvedOptions
+			& Required<Cph.Stream.EncryptOptions>
+		)
+
+
+		/**
+		 * Resolved Stream Decrypt options.
+		 * 
+		 */
+		export type DecryptResolvedOptions = (
+			Cph.ResolvedOptions
+			& Required<Cph.Stream.DecryptOptions>
+		)
+
+		/**
+		 * INTERNAL USE ONLY
+		 */
+		export interface CipherOptions
 		{
-			/**
-			 * Alias for {@link Cph.Stream.Symmetric.EncryptOptions}
-			 */
-			export type EncryptOptions = Cph.Stream.Symmetric.EncryptOptions
+			cipher		: Cipheriv
+			encryptedKey: Buffer
+			input		: Readable
+			output		: Writable
+		}
+
+		/**
+		 * INTERNAL USE ONLY
+		 */
+		export interface DecipherOptions
+		{
+			decipher	: Decipheriv
+			input		: Readable
+			output		: Writable
+		}
 
 
-			/**
-			 * Alias for {@link Cph.Stream.Symmetric.EncryptResolvedOptions}
-			 */
-			export type EncryptResolvedOptions = Cph.Stream.Symmetric.EncryptResolvedOptions
+		export type ExtractedKeyLength = [ KeyLength: number, input: Readable | Transform ]
+		export type ExtractedBytes = [ DataRead: Buffer, input: Transform ]
+	}
 
 
-			/**
-			 * Options for decrypting a stream.
-			 */
-			export interface DecryptOptions extends Cph.Stream.Symmetric.DecryptOptions
-			{
-				/**
-				 * The RSA key length in bytes used while encrypting data. This is used to properly extract the encrypted Cipher Key and Initialization Vector.
-				 * 
-				 * @deprecated This is no longer needed. Key length is now stored in the encrypted data payload.
-				 */
-				rsaKeyLength: number
-			}
-			
-			
-			/**
-			 * Resolved Stream Decrypt options.
-			 */
-			export type DecryptResolvedOptions = (
-				Cph.ResolvedOptions
-				& Required<Cph.Stream.Hybrid.DecryptOptions>
-			)
-
-
-			/**
-			 * Alias for {@link Cph.Stream.Symmetric.EncryptReturnType}
-			 */
-			export type EncryptReturnType = Cph.Stream.Symmetric.EncryptReturnType
-
-
-			/**
-			 * Alias for {@link Cph.Stream.Symmetric.DecryptReturnType}
-			 */
-			export type DecryptReturnType = Cph.Stream.Symmetric.DecryptReturnType
+	export namespace Decrypt
+	{
+		export interface ExtractKeyOptions
+		{
+			privateKey: Cph.PrivateKey
+			EncryptedKeyIV: Buffer
+			keyLength: number
 		}
 	}
 }
-

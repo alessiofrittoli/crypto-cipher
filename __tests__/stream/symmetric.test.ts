@@ -1,29 +1,19 @@
-import crypto from 'crypto'
 import { Readable, Writable } from 'stream'
-import { Cipher } from '@/new'
+import { Cipher } from '@/index'
 
 
-describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
+describe( 'Cipher - In-Memory Stream Encryption/Decryption', () => {
 	
 	const dataToEncrypt	= 'my TOP-SECRET message'
 	const password		= 'verystrong-password'
 
-
-	const rsaBytes	= 512
-	const keyPair	= crypto.generateKeyPairSync( 'rsa', {
-		modulusLength		: rsaBytes * 8, // 4096 bits
-		publicKeyEncoding	: { type: 'spki', format: 'pem' },
-		privateKeyEncoding	: { type: 'pkcs1', format: 'pem', passphrase: password, cipher: 'aes-256-cbc' }
-	} )
-
-
 	const encryptedChunks: Buffer[] = []
 
 
-	describe( 'Cipher.stream.HybridEncrypt()', () => {
+	describe( 'Cipher.stream.Encrypt()', () => {
 
 		it( 'encrypts an in-memory buffer stream', async () => {
-
+	
 			// Create a `Readable` Stream with raw data.
 			const input = new Readable( {
 				read()
@@ -41,21 +31,20 @@ describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
 					callback()
 				}
 			} )
-	
-	
-			await Cipher.stream.HybridEncrypt( keyPair.publicKey, { input, output } )
-	
+
+			await Cipher.stream.Encrypt( password, { input, output } )
+			
 			const encryptedResult = Buffer.concat( encryptedChunks )
 			
 			expect( encryptedResult.toString() )
 				.not.toBe( dataToEncrypt )
-			
+
 		} )
 
 	} )
-	
-	
-	describe( 'Cipher.stream.HybridDecrypt()', () => {
+
+
+	describe( 'Cipher.stream.Decrypt()', () => {
 
 		it( 'decrypts an in-memory buffer stream', async () => {
 
@@ -81,16 +70,13 @@ describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
 				},
 			} )
 
-			await Cipher.stream.HybridDecrypt( {
-				key			: keyPair.privateKey,
-				passphrase	: password,
-			}, { input, output } )
+			await Cipher.stream.Decrypt( password, { input, output } )
 
 			const decrypted = Buffer.concat( chunks )
 
 			expect( decrypted.toString() )
 				.toBe( dataToEncrypt )
-
+			
 		} )
 
 	} )

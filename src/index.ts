@@ -1,44 +1,22 @@
 import crypto from 'crypto'
-import { Transform } from 'stream'
-import type { Readable, Writable } from 'stream'
-import { writeUint16BE, readUint16BE } from '@alessiofrittoli/crypto-buffer/conversion'
-import { coerceToUint8Array, type CoerceToUint8ArrayInput } from '@alessiofrittoli/crypto-buffer/coercion'
+import type { Readable } from 'stream'
 
-import type { Cph } from './types'
+import { extractBytesFromReadable } from '@alessiofrittoli/stream-reader/utils'
 import { clamp } from '@alessiofrittoli/math-utils'
+import {
+	coerceToUint8Array,
+	CoerceToUint8ArrayInput,
+	readUint16BE,
+	writeUint16BE,
+} from '@alessiofrittoli/crypto-buffer'
+import type { Cph } from '@/types'
 
 
-
-/**
- * INTERNAL USE ONLY
- */
-interface StreamEncryptOptions
-{
-	cipher		: crypto.Cipheriv
-	encryptedKey: Buffer
-	input		: Readable
-	output		: Writable
-}
-
-
-/**
- * INTERNAL USE ONLY
- */
-interface StreamDecryptOptions
-{
-	decipher	: crypto.Decipheriv
-	input		: Readable
-	output		: Writable
-}
-
-
-/**
- * Utility class for AES encryption and decryption following [NIST SP 800-38D](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf) standard reccomendations.
- */
 export class Cipher
 {
 	/**
 	 * Cipher default `salt` lengths.
+	 * 
 	 */
 	static readonly SALT_LENGTH = {
 		min		: 16,
@@ -49,6 +27,7 @@ export class Cipher
 
 	/**
 	 * Cipher default `IV` lengths.
+	 * 
 	 */
 	static readonly IV_LENGTH = {
 		min		: 8,
@@ -59,6 +38,7 @@ export class Cipher
 
 	/**
 	 * Cipher default `Auth Tag` lengths.
+	 * 
 	 */
 	static readonly AUTH_TAG_LENGTH = {
 		min		: 4,
@@ -69,6 +49,7 @@ export class Cipher
 	
 	/**
 	 * Cipher default `Additional Authenticated Data` lengths.
+	 * 
 	 */
 	static readonly AAD_LENGTH = {
 		min		: 16,
@@ -79,6 +60,7 @@ export class Cipher
 
 	/**
 	 * Default AES algorithms used based on functionality.
+	 * 
 	 */
 	static readonly DEFAULT_ALGORITHM = {
 		buffer: 'aes-256-gcm',
@@ -88,6 +70,7 @@ export class Cipher
 
 	/**
 	 * Supported AES algorithms.
+	 * 
 	 */
 	static readonly ALGORITHMS: Cph.AesAlgorithm[] = [
 		'aes-128-cbc', 'aes-128-ccm', 'aes-128-gcm', 'aes-128-ocb',
@@ -95,12 +78,12 @@ export class Cipher
 		'aes-256-cbc', 'aes-256-ccm', 'aes-256-gcm', 'aes-256-ocb',
 		'chacha20-poly1305'
 	] as const
-
-
+	
+	
 	/**
 	 * Encrypt in-memory data buffer.
 	 *
-	 * ⚠️ This is not suitable for large data. Use {@link Cipher.streamEncrypt()} or {@link Cipher.hybridStreamEncrypt()} methods for large data encryption.
+	 * ⚠️ This is not suitable for large data. Use {@link Cipher.StreamEncrypt()} or {@link Cipher.HybridStreamEncrypt()} methods for large data encryption.
 	 *
 	 * @param	data	The data to encrypt.
 	 * @param	secret	The secret key used to encrypt the `data`.
@@ -109,15 +92,17 @@ export class Cipher
 	 */
 	static Encrypt(
 		data	: CoerceToUint8ArrayInput,
-		options	: Cph.Options,
-	): Buffer
+		secret	: CoerceToUint8ArrayInput,
+		options	: Cph.Options = {},
+	)
 	{
 		const _data = coerceToUint8Array( data )
 
 		const {
 			salt, Key, IV, AAD,
 			options: { algorithm, authTag: authTagLength },
-		} = Cipher.NewKeyIV( options )
+		} = Cipher.NewKeyIV( { ...options, secret } )
+
 
 		if ( Cipher.IsCBC( algorithm ) ) {
 			const cipher	= crypto.createCipheriv( algorithm, Key, IV )
@@ -150,12 +135,12 @@ export class Cipher
 
 		return Buffer.concat( [ salt, IV, AAD, authTag, encrypted ] )
 	}
-
+	
 
 	/**
 	 * Decrypt in-memory data buffer.
 	 *
-	 * ⚠️ This is not suitable for large data. Use {@link Cipher.streamDecrypt()} or {@link Cipher.hybridStreamDecrypt()} methods for large data decryption.
+	 * ⚠️ This is not suitable for large data. Use {@link Cipher.StreamDecrypt()} or {@link Cipher.HybridStreamDecrypt()} methods for large data decryption.
 	 *
 	 * @param	data	The data to decrypt.
 	 * @param	secret	The secret key used to decrypt the `data`.
@@ -164,19 +149,20 @@ export class Cipher
 	 */
 	static Decrypt(
 		data	: CoerceToUint8ArrayInput,
-		options	: Cph.Options,
-	): Buffer
+		secret	: CoerceToUint8ArrayInput,
+		options	: Cph.Options = {},
+	)
 	{
 		let _data			= coerceToUint8Array( data )
 		const _options		= Cipher.ResolveOptions( options )
-		const secret		= coerceToUint8Array( _options.secret )
+		const _secret		= coerceToUint8Array( secret )
 		const { algorithm }	= _options
 
 		const salt		= _data.subarray( 0, _options.salt )
 		_data			= _data.subarray( _options.salt )
 		const IV		= _data.subarray( 0, _options.iv )
 		_data			= _data.subarray( _options.iv )
-		const Key		= crypto.scryptSync( secret, salt, _options.length )
+		const Key		= crypto.scryptSync( _secret, salt, _options.length )
 
 		if ( Cipher.IsCBC( algorithm ) ) {
 			const decipher = (
@@ -217,104 +203,6 @@ export class Cipher
 	
 		return (
 			Buffer.concat( [ decipher.update( _data ), decipher.final() ] )
-		)
-
-	}
-
-
-	/**
-	 * Encrypt a `Readable` to a `Writable` Stream.
-	 * 
-	 * The `Readable` Stream could be 'in-memory buffer' or 'file' based.
-	 * 
-	 * @param	secret	The secret key used to encrypt the `data`.
-	 * @param	options Additional options.
-	 * @returns An object containing:
-	 * 	- a new instance of `crypto.Cipheriv` allowing you to add listeners to the `cipher` encryption process.
-	 * 	- the actual `encrypt` callback that must be called and awaited in order to start the encryption process.
-	 * TODO: da rivedere
-	 */
-	static streamEncrypt(
-		secret	: CoerceToUint8ArrayInput,
-		options	: Cph.Stream.Symmetric.EncryptOptions,
-	): Cph.Stream.Symmetric.EncryptReturnType
-	{
-		options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
-
-		const {
-			Key, IV, options: { input, output, algorithm, salt, iv, authTag },
-		} = Cipher.NewKeyIV<Cph.Stream.Symmetric.EncryptResolvedOptions>( options )
-
-		const encryptedKey = (
-			Cipher.Encrypt( Buffer.concat( [ Key, IV ] ), { secret, algorithm, salt, iv, authTag } )
-		)
-
-		const cipher = crypto.createCipheriv( algorithm, Key, IV )
-		const encrypt = () => (
-			Cipher.Stream( {
-				cipher, input, output, encryptedKey
-			} )
-		)
-
-		return { cipher, encrypt }
-	}
-
-
-	/**
-	 * Decrypt a `Readable` to a `Writable` Stream.
-	 * 
-	 * The `Readable` Stream could be 'in-memory buffer' or 'file' based.
-	 * 
-	 * @param	secret	The secret key used to encrypt the `data`.
-	 * @param	options Additional options.
-	 * @returns A new Promise that resolves when Key IV extraction completes returning an object containing:
-	 * 	- a new instance of `crypto.Decipheriv` allowing you to add listeners to the `decipher` decryption process.
-	 * 	- the actual `decrypt` callback that must be called and awaited in order to start the decryption process.
-	 * 
-	 * TODO: da rivedere
-	 */
-	static streamDecrypt(
-		secret	: CoerceToUint8ArrayInput,
-		options	: Cph.Stream.Symmetric.DecryptOptions,
-	): Promise<Cph.Stream.Symmetric.DecryptReturnType>
-	{
-		options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
-
-		const {
-			input, output, algorithm, salt, iv, authTag, length
-		} = Cipher.ResolveOptions<Cph.Stream.Symmetric.DecryptResolvedOptions>( options )
-
-		const keyIvLength = (
-			length + iv
-			+ salt + iv + authTag
-		)
-
-		return (
-			Cipher.ExtractKeyIVFromStream( input, keyIvLength )
-				.then( ( [ encryptedKeyIV, input ] ) => {
-					/**
-					 * Check if input has error and re-throw if so.
-					 * This is required since `.on( 'error' )` listeners attached in
-					 * `Cipher.DecipherStream()` get attached too late (error event already emitted).
-					 */
-					if ( input.errored ) throw input.errored
-					
-					const KeyIV = (
-						Cipher.Decrypt( encryptedKeyIV, { secret, algorithm, salt, iv, authTag } )
-					)
-
-					const Key		= KeyIV.subarray( 0, length )
-					const IV		= KeyIV.subarray( length )
-					const decipher	= crypto.createDecipheriv( algorithm, Key, IV )
-	
-					const decrypt = () => (
-						Cipher.DecipherStream(
-							{ decipher, input, output }
-						)
-					)
-			
-					return { decipher, decrypt }
-				} )
 		)
 	}
 
@@ -359,7 +247,7 @@ export class Cipher
 	/**
 	 * Decrypt in-memory data using hybrid decryption.
 	 * 
-	 * ⚠️ This is not suitable for large data. Use {@link Cipher.HybridStreamDecrypt()} method for large data encryption.
+	 * ⚠️ This is not suitable for large data. Use {@link Cipher.stream.HybridDecrypt()} method for large data encryption.
 	 * 
 	 * @param	data		The encrypted data to decrypt.
 	 * @param	privateKey	The private key.
@@ -369,7 +257,7 @@ export class Cipher
 	 */
 	static HybridDecrypt(
 		data		: CoerceToUint8ArrayInput,
-		privateKey	: crypto.KeyLike | { key: crypto.KeyLike, passphrase?: string },
+		privateKey	: Cph.PrivateKey,
 		options?	: Cph.Options,
 	)
 	{
@@ -378,12 +266,9 @@ export class Cipher
 		const rsaKeyLength		= readUint16BE( dataBuff.subarray( 0, 2 ) )
 		const encryptedKey		= dataBuff.subarray( 2, 2 + rsaKeyLength )
 		const encryptedData		= dataBuff.subarray( 2 + rsaKeyLength )
-		const rsaPrivateKey		= (
-			typeof privateKey === 'object' && 'key' in privateKey ? privateKey.key : privateKey
-		)
-		const passphrase		= (
-			typeof privateKey === 'object' && 'passphrase' in privateKey ? privateKey.passphrase : undefined
-		)
+		const {
+			privateKey: rsaPrivateKey, passphrase
+		} = Cipher.GetPrivateKey( privateKey )
 
 		const decryptedKey = (
 			crypto.privateDecrypt( {
@@ -400,231 +285,251 @@ export class Cipher
 
 
 	/**
-	 * Encrypt a `Readable` to a `Writable` Stream with hybird Encryption.
-	 *
-	 * The `Readable` Stream could be 'in-memory buffer' or 'file' based.
-	 *
-	 * @param	secret		The secret key used to encrypt the stream.
-	 * @param	publicKey	The RSA public key used to encrypt the symmetric key.
-	 * @param	options		Options for the stream encryption.
-	 * @returns An object containing:
-	 * 	- a new instance of `crypto.Cipheriv` allowing you to add listeners to the `cipher` encryption process.
-	 * 	- the actual `encrypt` callback that must be called and awaited in order to start the encryption process.
+	 * Cipher stream based functions.
+	 * 
 	 */
-	static hybridStreamEncrypt(
-		publicKey	: crypto.RsaPublicKey | crypto.RsaPrivateKey | crypto.KeyLike,
-		options		: Cph.Stream.Hybrid.EncryptOptions,
-	): Cph.Stream.Hybrid.EncryptReturnType
-	{
-		options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
-
-		const {
-			Key, IV,
-			options: { algorithm, input, output },
-		} = Cipher.NewKeyIV<Cph.Stream.Hybrid.EncryptResolvedOptions>( options )
-
-		const encryptedKey = (
-			crypto.publicEncrypt( publicKey, Buffer.concat( [ Key, IV ] ) )
+	static stream = {
+		/**
+		 * Encrypt stream data.
+		 * 
+		 * @param	secret	The secret key used to encrypt the data.
+		 * @param	options An object defining required options. See {@link Cph.Stream.EncryptOptions} for more info.
+		 * 
+		 * @returns A new Promise that resolves `void` once stream encryption is completed.
+		 */
+		Encrypt(
+			secret	: CoerceToUint8ArrayInput,
+			options	: Cph.Stream.EncryptOptions,
 		)
+		{
+			options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
+			
+			const {
+				Key, IV, options: { input, output, algorithm, salt, iv, authTag },
+			} = Cipher.NewKeyIV<Cph.Stream.EncryptResolvedOptions>( options )
+			
+			const encryptedKey = (
+				Cipher.Encrypt( Buffer.concat( [ Key, IV ] ), secret, { algorithm, salt, iv, authTag } )
+			)
+	
+			const cipher = crypto.createCipheriv( algorithm, Key, IV )
 
-		const cipher = crypto.createCipheriv( algorithm, Key, IV )
-		const encrypt = () => (
-			Cipher.stream( {
+			return Cipher.stream.Cipher( {
 				cipher, input, output, encryptedKey
 			} )
+		},
+		/**
+		 * Decrypt stream data.
+		 * 
+		 * @param	secret	The secret key used to decrypt the data.
+		 * @param	options	An object defining required options. See {@link Cph.Stream.DecryptOptions} for more info.
+		 * 
+		 * @returns	A new Promise that resolves `void` once stream decryption is completed.
+		 */
+		Decrypt(
+			secret	: CoerceToUint8ArrayInput,
+			options	: Cph.Stream.DecryptOptions,
 		)
+		{
+			options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
 
-		return { cipher, encrypt }
+			const {
+				input, output, algorithm, salt, iv, authTag, length
+			} = Cipher.ResolveOptions<Cph.Stream.DecryptResolvedOptions>( options )
+
+			return (
+				Cipher.stream.ExtractKeyLength( input )
+					.then( Cipher.stream.ExtractKeyIV )
+					.then( ( [ EncryptedKeyIV, input ] ) => {
+						/**
+						 * Check if input has error and re-throw if so.
+						 * This is required since `.on( 'error' )` listeners attached in
+						 * `Cipher.stream.Decipher()` get attached too late (error event already emitted).
+						 */
+						if ( input.errored ) throw input.errored
+
+						const KeyIV = (
+							Cipher.Decrypt( EncryptedKeyIV, secret, { algorithm, salt, iv, authTag } )
+						)
+
+						const Key		= KeyIV.subarray( 0, length )
+						const IV		= KeyIV.subarray( length )
+						const decipher	= crypto.createDecipheriv( algorithm, Key, IV )
+
+						return Cipher.stream.Decipher( {
+							decipher, input, output
+						} )
+					} )
+			)
+
+		},
+		/**
+		 * Encrypt stream data using hybrid encryption.
+		 * 
+		 * @param	publicKey	The public key.
+		 * @param	options		An object defining required options. See {@link Cph.Stream.EncryptOptions} for more info.
+		 * 
+		 * @returns	A new Promise that resolves `void` once stream encryption is completed.
+		 */
+		HybridEncrypt(
+			publicKey	: crypto.KeyLike,
+			options		: Cph.Stream.EncryptOptions,
+		) {
+
+			options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
+
+			const {
+				Key, IV,
+				options: { algorithm, input, output },
+			} = Cipher.NewKeyIV<Cph.Stream.EncryptResolvedOptions>( options )
+
+			const encryptedKey = (
+				crypto.publicEncrypt( {
+					key			: publicKey,
+					padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+					oaepHash	: 'sha256',
+				}, Buffer.concat( [ Key, IV ] ) )
+			)
+	
+			const cipher = crypto.createCipheriv( algorithm, Key, IV )
+			
+			return Cipher.stream.Cipher( {
+				cipher, encryptedKey, input, output
+			} )
+
+		},
+		/**
+		 * Decrypt stream data using hybrid decryption.
+		 * 
+		 * @param	privateKey	The private key.
+		 * @param	options		An object defining required options. See {@link Cph.Stream.DecryptOptions} for more info.
+		 * 
+		 * @returns	A new Promise that resolves `void` once stream decryption is completed.
+		 */
+		HybridDecrypt(
+			privateKey	: Cph.PrivateKey,
+			options		: Cph.Stream.DecryptOptions,
+		) {
+
+			const { input, output } = options
+
+			const { keyLength, algorithm } = (
+				Cipher.GetKeyLength( options.algorithm || Cipher.DEFAULT_ALGORITHM.stream )
+			)
+
+			return (
+				Cipher.stream.ExtractKeyLength( input )
+					.then( Cipher.stream.ExtractKeyIV )
+					.then( ( [ EncryptedKeyIV, input ] ) => (
+						{
+							...( Cipher.DecryptKeyIV( {
+								privateKey, EncryptedKeyIV, keyLength,
+							} ) ),
+							input,
+						}
+					) )
+					.then( ( { Key, IV, input } ) => {
+						const decipher = crypto.createDecipheriv( algorithm, Key, IV )
+
+						return Cipher.stream.Decipher(
+							{ decipher, input, output }
+						)
+					} )
+			)
+
+		},
+		/**
+		 * Handle pipe flow to encrypt a Stream.
+		 * 
+		 * @param	options Required parameters.
+		 * @returns A new Promise that resolves `void` once stream is completed.
+		 */
+		Cipher( options: Cph.Stream.CipherOptions ) {
+			const {
+				cipher, encryptedKey, input, output
+			} = options
+
+			return (
+				new Promise<void>( ( resolve, reject ) => {
+					cipher.on( 'error', reject )
+					input.on( 'error', reject )
+					output.on( 'error', reject )
+					output.on( 'finish', resolve )
+			
+					output.write( writeUint16BE( encryptedKey.length ) )
+					output.write( encryptedKey )
+					input.pipe( cipher ).pipe( output )
+				} )
+			)
+		},
+		/**
+		 * Handle pipe flow to decrypt a Stream.
+		 * 
+		 * @param	options Required parameters.
+		 * @returns A new Promise that resolves `void` once stream is completed.
+		 */
+		Decipher( options: Cph.Stream.DecipherOptions ) {
+			const {
+				decipher, input, output,
+			} = options
+
+			return (
+				new Promise<void>( ( resolve, reject ) => {
+					decipher.on( 'error', reject )
+					input.on( 'error', reject )
+					output.on( 'error', reject )
+					output.on( 'finish', resolve )
+
+					input.pipe( decipher ).pipe( output )
+				} )
+			)
+		},
+		ExtractKeyLength( input: Readable ): Promise<Cph.Stream.ExtractedKeyLength> {
+			return (
+				extractBytesFromReadable( input, 2 )
+					.then( ( [ KeyLength, output ] ) => [
+						readUint16BE( KeyLength ), output
+					] )
+			)
+		},
+		ExtractKeyIV( [ KeyLength, input ]: Cph.Stream.ExtractedKeyLength ) {
+			return (
+				extractBytesFromReadable( input, KeyLength )
+			)
+		},
 	}
 
 
-	static NewStreamHybridEncrypt(
-		publicKey	: crypto.KeyLike,
-		options		: Cph.Stream.Hybrid.EncryptOptions,
-	)
+	/**
+	 * Decrypt Key and Initialization Vector.
+	 * 
+	 * @param	options An object containing required data.
+	 * @returns	An object containing decrpyted `Key` and `IV`.
+	 */
+	private static DecryptKeyIV( options: Cph.Decrypt.ExtractKeyOptions )
 	{
-		// const {
-		// 	input, output,
-		// 	algorithm = Cipher.DEFAULT_ALGORITHM.stream
-		// } = options
-
-		options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
+		const { privateKey, EncryptedKeyIV, keyLength } = options
 
 		const {
-			Key, IV,
-			options: { algorithm, input, output },
-		} = Cipher.NewKeyIV<Cph.Stream.Hybrid.EncryptResolvedOptions>( options )
+			privateKey: rsaPrivateKey, passphrase
+		} = Cipher.GetPrivateKey( privateKey )
 
+		const KeyIV = crypto.privateDecrypt( {
+			key			: rsaPrivateKey,
+			passphrase	: passphrase,
+			padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+			oaepHash	: 'sha256',
+		}, EncryptedKeyIV )
 
-		// const { keyLength, algorithm: algo } = Cipher.GetKeyLength( algorithm )
-		// const IVLength = Cipher.GetIVLength( algo )
+		const Key	= KeyIV.subarray( 0, keyLength )
+		const IV	= KeyIV.subarray( keyLength )
 
-		// const Key = crypto.randomBytes( keyLength )
-		// const IV = crypto.randomBytes( IVLength )
-
-		const encryptedKey = (
-			crypto.publicEncrypt( {
-				key			: publicKey,
-				padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-				oaepHash	: 'sha256',
-			}, Buffer.concat( [ Key, IV ] ) )
-		)
-
-		const cipher = crypto.createCipheriv( algorithm, Key, IV )
-		
-		return Cipher.Stream( {
-			cipher, encryptedKey, input, output
-		} )
+		return { Key, IV }
 	}
 
-
-	static async NewStreamHybridDecrypt(
-		privateKey	: crypto.KeyLike | { key: crypto.KeyLike, passphrase?: string },
-		options		: Cph.Stream.Hybrid.EncryptOptions,
-	)
+	
+	private static GetPrivateKey( privateKey: Cph.PrivateKey )
 	{
-		const {
-			input, output, algorithm = Cipher.DEFAULT_ALGORITHM.stream
-		} = options
-
-		const extractKeyLength = ( input: Readable ) => (
-			new Promise<[ KeyLength: number, input: Transform ]>( ( resolve, reject ) => {
-
-				let KeyLength	= Buffer.alloc( 0 )
-				let bytesRead	= 0
-				let resolved	= false
-
-				const transform = new Transform( {
-					transform( chunk: Buffer, encoding, callback ) {
-
-						if ( bytesRead < 2 ) {
-
-							KeyLength			= Buffer.concat( [ KeyLength, chunk ] )
-							bytesRead			+= chunk.length
-							const hasByteLoss	= KeyLength.length > 2
-							const bytesLoss		= hasByteLoss ? KeyLength.subarray( 2 ) : undefined
-							KeyLength			= KeyLength.subarray( 0, 2 )
-							
-							if ( bytesLoss ) {								
-								/**
-								 * Send to next pipe desitination byte loss.
-								 * 
-								 */
-								this.push( bytesLoss, encoding )
-							}
-
-							if ( ! resolved && KeyLength.length === 2 ) {
-								resolved = true
-								resolve( [ readUint16BE( KeyLength ), this ] )
-							}
-
-							return callback()
-						}
-
-						if ( ! resolved && KeyLength.length === 2 ) {
-							resolved = true
-							resolve( [ readUint16BE( KeyLength ), this ] )
-						}
-
-						bytesRead += chunk.length
-
-						this.push( chunk, encoding )
-
-						return callback()
-					},
-					final( callback ) {
-						if ( KeyLength.length < 2 ) {
-							return callback(
-								new Error( 'The extracted KeyLength Buffer length is less than the expected length.' )
-							)
-						}
-						return callback()
-					},
-				} )
-
-				transform.on( 'error', reject )
-
-				input.on( 'error', error => {
-					transform.destroy( error )
-					reject( error )
-				} )
-
-				input.pipe( transform )
-
-			} )
-		)
-
-
-		// const extractKeyIV = ( input: Readable, KeyLength: number ) => (
-		const extractKeyIV = ( [ KeyLength, input ]: [ KeyLength: number, input: Transform ] ) => (
-			new Promise<[ KeyIV: Buffer, input: Transform ]>( ( resolve, reject ) => {
-
-				let KeyIV		= Buffer.alloc( 0 )
-				let bytesRead	= 0
-				let resolved	= false
-
-				const transform = new Transform( {
-					transform( chunk: Buffer, encoding, callback ) {
-						
-						if ( bytesRead < KeyLength ) {
-
-							KeyIV				= Buffer.concat( [ KeyIV, chunk ] )
-							bytesRead			+= chunk.length
-							const hasByteLoss	= KeyIV.length > KeyLength
-							const bytesLoss		= hasByteLoss ? KeyIV.subarray( KeyLength ) : undefined
-							KeyIV				= KeyIV.subarray( 0, KeyLength )
-
-							// console.log( { bytesRead, bytesLoss: bytesLoss?.length } )
-
-							if ( bytesLoss ) {								
-								/**
-								 * Send to next pipe desitination byte loss.
-								 * 
-								 */
-								this.push( bytesLoss, encoding )
-							}
-
-							if ( ! resolved && KeyIV.length === KeyLength ) {
-								resolved = true
-								resolve( [ KeyIV, this ] )
-							}
-
-							return callback()
-						}
-
-						
-						if ( ! resolved && KeyIV.length === KeyLength ) {
-							resolved = true
-							resolve( [ KeyIV, this ] )
-						}
-
-						bytesRead += chunk.length
-						this.push( chunk, encoding )
-
-						return callback()
-					},
-					final( callback ) {
-						if ( KeyIV.length < KeyLength ) {
-							return callback(
-								new Error( 'The extracted KeyIV Buffer length is less than the expected length.' )
-							)
-						}
-						return callback()
-					},
-				} )
-
-				transform.on( 'error', reject )
-
-				input.on( 'error', error => {
-					transform.destroy( error )
-					reject( error )
-				} )
-
-				input.pipe( transform )
-
-			} )
-		)
-
 		const rsaPrivateKey		= (
 			typeof privateKey === 'object' && 'key' in privateKey ? privateKey.key : privateKey
 		)
@@ -632,222 +537,7 @@ export class Cipher
 			typeof privateKey === 'object' && 'passphrase' in privateKey ? privateKey.passphrase : undefined
 		)
 
-		const { keyLength, algorithm: algo } = Cipher.GetKeyLength( algorithm )
-
-		return (
-			extractKeyLength( input )
-				.then( extractKeyIV )
-				.then( ( [ EncryptedKeyIV, input ] ) => {
-					const KeyIV		= crypto.privateDecrypt( {
-						key			: rsaPrivateKey,
-						passphrase	: passphrase,
-						padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-						oaepHash	: 'sha256',
-					}, EncryptedKeyIV )
-
-					const Key	= KeyIV.subarray( 0, keyLength )
-					const IV	= KeyIV.subarray( keyLength )
-
-					const decipher	= crypto.createDecipheriv( algo, Key, IV )
-
-					return Cipher.DecipherStream(
-						{ decipher, input, output }
-					)
-				} )
-		)
-
-	}
-
-
-	/**
-	 * Decrypt a `Readable` to a `Writable` Stream with hybrid Decryption.
-	 * 
-	 * The `Readable` Stream could be 'in-memory buffer' or 'file' based.
-	 *
-	 * @param	privateKey	The RSA private key used to decrypt the symmetric key.
-	 * @param	options		Options for the stream decryption.
-	 * @returns A new Promise that resolves when Key IV extraction completes returning an object containing:
-	 * 	- a new instance of `crypto.Decipheriv` allowing you to add listeners to the `decipher` decryption process.
-	 * 	- the actual `decrypt` callback that must be called and awaited in order to start the decryption process.
-	 */
-	static hybridStreamDecrypt(
-		privateKey	: crypto.RsaPrivateKey | crypto.KeyLike,
-		options		: Cph.Stream.Hybrid.DecryptOptions,
-	): Promise<Cph.Stream.Hybrid.DecryptReturnType>
-	{
-		options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
-
-		const {
-			input, output, algorithm, length, rsaKeyLength
-		} = Cipher.ResolveOptions<Cph.Stream.Hybrid.DecryptResolvedOptions>( options )
-
-		return (
-			Cipher.ExtractKeyIVFromStream( input, rsaKeyLength )
-				.then( ( [ encryptedKeyIV, input ] ) => {
-					const KeyIV		= crypto.privateDecrypt( privateKey, encryptedKeyIV )
-					const Key		= KeyIV.subarray( 0, length )
-					const IV		= KeyIV.subarray( length )
-					const decipher	= crypto.createDecipheriv( algorithm, Key, IV )
-	
-					const decrypt = () => (
-						Cipher.DecipherStream(
-							{ decipher, input, output }
-						)
-					)
-			
-					return { decipher, decrypt }
-				} )
-		)
-	}
-
-
-	/**
-	 * Handle pipe flow to encrypt a Stream.
-	 * 
-	 * @param	options Required parameters.
-	 * @returns A new Promise that resolves `void` once stream is completed.
-	 */
-	private static Stream( options: StreamEncryptOptions )
-	{
-		const {
-			cipher, encryptedKey, input, output
-		} = options
-
-		return (
-			new Promise<void>( ( resolve, reject ) => {
-				cipher.on( 'error', reject )
-				input.on( 'error', reject )
-				output.on( 'error', reject )
-				output.on( 'finish', resolve )
-		
-				output.write( writeUint16BE( encryptedKey.length ) )
-				output.write( encryptedKey )
-				input.pipe( cipher ).pipe( output )
-			} )
-		)
-	}
-
-
-	/**
-	 * Handle pipe flow to decrypt a Stream.
-	 * 
-	 * @param	options Required parameters.
-	 * @returns A new Promise that resolves `void` once stream is completed.
-	 */
-	private static DecipherStream( options: StreamDecryptOptions )
-	{
-		const {
-			decipher, input, output,
-		} = options
-
-		return (
-			new Promise<void>( ( resolve, reject ) => {
-				decipher.on( 'error', reject )
-				input.on( 'error', reject )
-				output.on( 'error', reject )
-				output.on( 'finish', resolve )
-
-				input.pipe( decipher ).pipe( output )
-			} )
-		)
-	}
-
-
-	/**
-	 * Extract the Cipher Encrypted Symmetric Key and Initialization Vector from an encrypted `Readable` Stream.
-	 *
-	 * @param	input		The `Readable` Stream.
-	 * @param	keyLength	The encrypted key length in bytes. This is used to properly extract the encrypted Cipher Key and Initialization Vector.
-	 * @returns	A new Promise that resolve a tuple containing the Cipher Encrypted Symmetric Key and Initialization Vector once fulfilled.
-	 */
-	private static ExtractKeyIVFromStream(
-		input		: Readable,
-		keyLength	: number,
-	)
-	{
-		return (
-			new Promise<[ KeyIV: Buffer, input: Transform ]>( ( resolve, reject ) => {
-				let KeyIV		= Buffer.alloc( 0 )
-				let bytesRead	= 0
-				let resolved	= false
-
-				const transform = new Transform( {
-					async transform( chunk: Buffer, encoding, callback )
-					{
-
-						if ( KeyIV.length < keyLength ) {
-							KeyIV = Buffer.concat( [ KeyIV, chunk ] )
-						}
-
-						bytesRead += chunk.length
-
-						/**
-						 * `KeyIV` length may exceed the `keyLength`.
-						 * This may occurs when the received chunk length is not a multiple of the `keyLength`.
-						 *
-						 * In that case the chunk will contain mixed content:
-						 * - end of the `KeyIV`.
-						 * - begin of the actual encrypted data.
-						 *
-						 * For a proper data handling we need to:
-						 * - cut off the `KeyIV` to `keyLength` bytes.
-						 * - recover and push the byte loss to the next piped destination.
-						 */
-						if ( KeyIV.length > keyLength ) {
-							const bytesLoss	= Math.max( 0, KeyIV.length - keyLength )
-							KeyIV			= KeyIV.subarray( 0, keyLength )
-							const subchunk	= chunk.subarray( bytesLoss * -1 )
-
-							if ( ! resolved ) {
-								resolve( [ KeyIV, this ] )
-								resolved = true
-							}
-
-							/**
-							 * Push to the next piped destination.
-							 */							
-							this.push( subchunk, encoding )
-
-							return callback()
-						}
-
-
-						/**
-						 * `KeyIV` has been read.
-						 * The Received chunk can now be pushed to the next piped destination.
-						 */
-						if ( bytesRead > keyLength ) {
-							if ( ! resolved ) {
-								resolve( [ KeyIV, this ] )
-								resolved = true
-							}
-							/**
-							 * Push to the next piped destination.
-							 */
-							this.push( chunk, encoding )
-						}
-
-						return callback()
-					},
-					final( callback )
-					{
-						if ( KeyIV.length < keyLength ) {
-							return callback(
-								new Error( 'The extracted KeyIV length is less than the expected length.' )
-							)
-						}
-						return callback()
-					},
-				} )
-
-				transform.on( 'error', reject )
-				input.on( 'error', error => {
-					transform.destroy( error )
-					reject( error )
-				} )
-				input.pipe( transform )
-			} )
-		)
+		return { privateKey: rsaPrivateKey, passphrase }
 	}
 
 
@@ -859,7 +549,7 @@ export class Cipher
 	 * @returns An object with the generated `Key`, `IV`, `salt` and resolved `options`. 
 	 */
 	static NewKeyIV<T extends Cph.ResolvedOptions = Cph.ResolvedOptions>(
-		options	: Cph.Options = {},
+		options	: Cph.NewKeyIVOptions = {},
 	)
 	{
 		const { secret } = options
@@ -880,7 +570,7 @@ export class Cipher
 	 * @param options ( Optional ) Additional options.
 	 * @returns The given `options` with `Cipher` defaults and constraints.
 	 */
-	static ResolveOptions<
+	private static ResolveOptions<
 		T extends Cph.ResolvedOptions = Cph.ResolvedOptions
 	>( options: Cph.Options = {} ): T
 	{
@@ -1058,4 +748,5 @@ export class Cipher
 			algorithm === 'aes-256-cbc'
 		)
 	}
+
 }

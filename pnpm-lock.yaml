@@ -14,6 +14,9 @@ importers:
       '@alessiofrittoli/math-utils':
         specifier: ^1.17.0
         version: 1.17.0
+      '@alessiofrittoli/stream-reader':
+        specifier: 2.7.0-alpha.1
+        version: 2.7.0-alpha.1
     devDependencies:
       '@alessiofrittoli/node-scripts':
         specifier: ^3.3.0
@@ -95,6 +98,9 @@ packages:
 
   '@alessiofrittoli/node-scripts@3.3.0':
     resolution: {integrity: sha512-09LXPw+qF0DIlSeqAtn06VaMLYpRZrgdG09JRRaSYjUhNszOv3zesROQvwlIlwrBRjRd2r37R/yu/4FflcwgCA==}
+
+  '@alessiofrittoli/stream-reader@2.7.0-alpha.1':
+    resolution: {integrity: sha512-sa1jGIi76GTx2HYONgR2iOJBj6CME0jZ3DdPizZI01s56ZdiG8k82YPmnk6QTXNJqpojo72vaUme8fRnFedrfg==}
 
   '@alessiofrittoli/type-utils@1.9.0':
     resolution: {integrity: sha512-YtbIEvMc3i8KrY22a84WJXa+qWEyr0POpVsNhWIZMU3c23BX1AHcrdFTdYac5h3apdhu/uRrSUDjOkGO/Vie0Q==}
@@ -2539,6 +2545,12 @@ snapshots:
       '@alessiofrittoli/abort-controller': 0.1.0
       '@alessiofrittoli/event-emitter': 1.6.0
       '@alessiofrittoli/exception': 3.5.0
+
+  '@alessiofrittoli/stream-reader@2.7.0-alpha.1':
+    dependencies:
+      '@alessiofrittoli/event-emitter': 1.6.0
+      '@alessiofrittoli/exception': 3.5.0
+      '@alessiofrittoli/math-utils': 1.17.0
 
   '@alessiofrittoli/type-utils@1.9.0':
     dependencies:

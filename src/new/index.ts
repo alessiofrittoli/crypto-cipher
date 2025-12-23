@@ -1,7 +1,7 @@
 import crypto from 'crypto'
-import { Transform } from 'stream'
 import type { Readable } from 'stream'
 
+import { extractBytesFromReadable } from '@alessiofrittoli/stream-reader/utils'
 import { clamp } from '@alessiofrittoli/math-utils'
 import {
 	coerceToUint8Array,
@@ -356,7 +356,7 @@ export class Cipher
 					.then( Cipher.stream.ExtractKeyIV )
 					.then( ( [ EncryptedKeyIV, input ] ) => (
 						{
-							...( Cipher.ExtractKey( {
+							...( Cipher.DecryptKeyIV( {
 								privateKey, EncryptedKeyIV, keyLength,
 							} ) ),
 							input,
@@ -420,7 +420,7 @@ export class Cipher
 		},
 		ExtractKeyLength( input: Readable ): Promise<Cph.Stream.ExtractedKeyLength> {
 			return (
-				Cipher.stream.ExtractBytesFromReadable( input, 2 )
+				extractBytesFromReadable( input, 2 )
 					.then( ( [ KeyLength, output ] ) => [
 						readUint16BE( KeyLength ), output
 					] )
@@ -428,81 +428,19 @@ export class Cipher
 		},
 		ExtractKeyIV( [ KeyLength, input ]: Cph.Stream.ExtractedKeyLength ) {
 			return (
-				Cipher.stream.ExtractBytesFromReadable( input, KeyLength )
-			)
-		},
-		ExtractBytesFromReadable( input: Readable, bytes: number ) {
-			return (
-				new Promise<Cph.Stream.ExtractedBytes>( ( resolve, reject ) => {
-	
-					let DataRead	= Buffer.alloc( 0 )
-					let bytesRead	= 0
-					let resolved	= false
-	
-					const transform = new Transform( {
-						transform( chunk: Buffer, encoding, callback ) {
-	
-							if ( bytesRead < bytes ) {
-	
-								DataRead			= Buffer.concat( [ DataRead, chunk ] )
-								bytesRead			+= chunk.length
-								const hasByteLoss	= DataRead.length > bytes
-								const bytesLoss		= hasByteLoss ? DataRead.subarray( bytes ) : undefined
-								DataRead			= DataRead.subarray( 0, bytes )
-								
-								if ( bytesLoss ) {								
-									/**
-									 * Send to next pipe desitination byte loss.
-									 * 
-									 */
-									this.push( bytesLoss, encoding )
-								}
-	
-								if ( ! resolved && DataRead.length === bytes ) {
-									resolved = true
-									resolve( [ DataRead, this ] )
-								}
-	
-								return callback()
-							}
-	
-							if ( ! resolved && DataRead.length === bytes ) {
-								resolved = true
-								resolve( [ DataRead, this ] )
-							}
-	
-							bytesRead += chunk.length
-	
-							this.push( chunk, encoding )
-	
-							return callback()
-						},
-						final( callback ) {
-							if ( DataRead.length < bytes ) {
-								return callback(
-									new Error( 'The extracted KeyLength Buffer length is less than the expected length.' )
-								)
-							}
-							return callback()
-						},
-					} )
-	
-					transform.on( 'error', reject )
-	
-					input.on( 'error', error => {
-						transform.destroy( error )
-						reject( error )
-					} )
-	
-					input.pipe( transform )
-	
-				} )
+				extractBytesFromReadable( input, KeyLength )
 			)
 		},
 	}
 
 
-	static ExtractKey( options: Cph.Decrypt.ExtractKeyOptions )
+	/**
+	 * Decrypt Key and Initialization Vector.
+	 * 
+	 * @param	options An object containing required data.
+	 * @returns	An object containing decrpyted `Key` and `IV`.
+	 */
+	private static DecryptKeyIV( options: Cph.Decrypt.ExtractKeyOptions )
 	{
 		const { privateKey, EncryptedKeyIV, keyLength } = options
 

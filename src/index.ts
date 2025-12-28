@@ -314,21 +314,21 @@ export class Cipher
 			options	: Cph.Stream.EncryptOptions,
 		)
 		{
+			
 			options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
 			
 			const {
-				Key, IV, options: { input, output, algorithm, salt, iv, authTag },
-			} = Cipher.NewKeyIV<Cph.Stream.EncryptResolvedOptions>( options )
-			
-			const encryptedKey = (
-				Cipher.Encrypt( Buffer.concat( [ Key, IV ] ), secret, { algorithm, salt, iv, authTag } )
-			)
-	
+				Key, IV, salt, options: { input, output, algorithm },
+			} = Cipher.NewKeyIV<Cph.Stream.EncryptResolvedOptions>( { secret, ...options } )
+
 			const cipher = crypto.createCipheriv( algorithm, Key, IV )
 
+			output.write( Buffer.concat( [ salt, IV ] ) )
+
 			return Cipher.stream.Cipher( {
-				cipher, input, output, encryptedKey
+				cipher, input, output
 			} )
+
 		},
 		/**
 		 * Decrypt stream data.
@@ -338,44 +338,27 @@ export class Cipher
 		 * 
 		 * @returns	A new Promise that resolves `void` once stream decryption is completed.
 		 */
-		Decrypt(
+		async Decrypt(
 			secret	: CoerceToUint8ArrayInput,
 			options	: Cph.Stream.DecryptOptions,
 		)
 		{
+
 			options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
 
 			const {
-				input, output, algorithm, salt, iv, authTag, length
-			} = Cipher.ResolveOptions<Cph.Stream.DecryptResolvedOptions>( options )
+				input, output, algorithm, length, salt, iv,
+			} = Cipher.ResolveOptions<Cph.Stream.EncryptResolvedOptions>( options )
 
-			return new Promise<void>( ( resolve, reject ) => {
-				input.on( 'error', reject )
-				output.on( 'error', reject )
+			const [ SaltIV, newInput ] = await extractBytesFromReadable( input, salt + iv )
 
-				return (
-					Cipher._stream.ExtractKeyLength( input )
-						.then( Cipher._stream.ExtractKeyIV )
-						.then( async ( [ EncryptedKeyIV, input ] ) => {
-							
-							input.on( 'error', reject )
+			const Salt		= SaltIV.subarray( 0, salt )
+			const IV		= SaltIV.subarray( salt )
+			const Key		= crypto.scryptSync( coerceToUint8Array( secret ), Salt, length )
+			const decipher	= crypto.createDecipheriv( algorithm, Key, IV )
 
-							const KeyIV = (
-								Cipher.Decrypt( EncryptedKeyIV, secret, { algorithm, salt, iv, authTag } )
-							)
-
-							const Key		= KeyIV.subarray( 0, length )
-							const IV		= KeyIV.subarray( length )
-							const decipher	= crypto.createDecipheriv( algorithm, Key, IV )
-
-							await Cipher.stream.Decipher( {
-								decipher, input, output
-							} )
-
-							resolve()
-						} )
-						.catch( reject )
-				)
+			return Cipher.stream.Decipher( {
+				decipher, input: newInput, output
 			} )
 
 		},
@@ -482,9 +465,11 @@ export class Cipher
 					input.on( 'error', reject )
 					output.on( 'error', reject )
 					output.on( 'finish', resolve )
-			
-					output.write( writeUint32BE( encryptedKey.length ) )
-					output.write( encryptedKey )
+
+					if ( encryptedKey ) {
+						output.write( writeUint32BE( encryptedKey.length ) )
+						output.write( encryptedKey )
+					}
 					input.pipe( cipher ).pipe( output )
 				} )
 			)

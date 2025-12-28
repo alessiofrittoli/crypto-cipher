@@ -77,7 +77,7 @@ export namespace Cph
 		 * Options for encrypting a stream.
 		 * 
 		 */
-		export interface EncryptOptions extends Cph.Options<Cph.CBCTypes>
+		export interface EncryptOptions extends Pick<Cph.Options<Cph.CBCTypes>, 'algorithm'>
 		{
 			/** The `Readable` Stream from where raw data to encrypt is read. */
 			input: Readable
@@ -117,7 +117,7 @@ export namespace Cph
 		export interface CipherOptions
 		{
 			cipher		: Cipheriv
-			encryptedKey: Buffer
+			encryptedKey?: Buffer
 			input		: Readable
 			output		: Writable
 		}

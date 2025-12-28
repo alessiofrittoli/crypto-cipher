@@ -643,13 +643,10 @@ export class Cipher
 			case 'chacha20-poly1305':
 				return 12
 			default:
-				return (
-					Math.min(
-						Math.max(
-							options.iv || Cipher.IV_LENGTH.default,
-							Cipher.IV_LENGTH.min
-						), Cipher.IV_LENGTH.max
-					)
+				return clamp(
+					options.iv || Cipher.IV_LENGTH.default,
+					Cipher.IV_LENGTH.min,
+					Cipher.IV_LENGTH.max,
 				)
 		}
 	}

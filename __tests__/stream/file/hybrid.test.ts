@@ -1,11 +1,10 @@
 import fs from 'fs'
-import path from 'path'
 import crypto from 'crypto'
+import path from 'path'
 import { Cipher } from '@/index'
 import { bufferEquals } from '@alessiofrittoli/crypto-buffer'
 
-
-const getPaths = ( file: string, basepath: string ) => {
+export const getPaths = ( file: string, basepath: string ) => {
 	const parsed		= path.parse( file )
 	const inputpath		= path.join( basepath, `${ parsed.name }${ parsed.ext }` )
 	const encryptedPath	= path.join( basepath, `${ parsed.name }-encrypted` )
@@ -15,10 +14,11 @@ const getPaths = ( file: string, basepath: string ) => {
 }
 
 
-describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
-
+describe( 'Cipher - File Stream Hybrid Encryption/Decryption', () => {
+	
 	const dataToEncrypt	= 'my TOP-SECRET message'
 	const password		= 'verystrong-password'
+
 
 	const rsaBytes	= 512
 	const keyPair	= crypto.generateKeyPairSync( 'rsa', {
@@ -48,52 +48,49 @@ describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
 	} )
 
 
-	it( 'encrypts a file based stream', async () => {
+	describe( 'Cipher.stream.HybridEncrypt()', () => {
 
-		// input where raw data to encrypt is read
-		const input = fs.createReadStream( inputpath )
-		// output where encrypted data is written
-		const output = fs.createWriteStream( encryptedPath )
-		// encrypt
-		const { encrypt } = Cipher.hybridStreamEncrypt( password, {
-			key			: keyPair.publicKey,
-			padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-			oaepHash	: 'SHA-256',
-		}, { input, output } )
+		it( 'encrypts a file based stream', async () => {
+	
+			// input where raw data to encrypt is read
+			const input = fs.createReadStream( inputpath )
+			// output where encrypted data is written
+			const output = fs.createWriteStream( encryptedPath )
+	
+				
+			await Cipher.stream.HybridEncrypt( keyPair.publicKey, { input, output } )
+			
+			const encrypted = fs.readFileSync( encryptedPath )
 
-		await encrypt()
+			expect( bufferEquals( encrypted, Buffer.from( dataToEncrypt ) ) )
+				.not.toBe( true )
 
-		const encrypted = fs.readFileSync( encryptedPath )
-		
-		expect( bufferEquals( encrypted, Buffer.from( dataToEncrypt ) ) )
-			.not.toBe( true )
-		
+		} )
+
 	} )
 
-	
-	it( 'decrypts a file based stream', async () => {
 
-		// input where encrypted data is read
-		const input = fs.createReadStream( encryptedPath )
-		// output where decrypted data is written
-		const output = fs.createWriteStream( decryptedPath )
-		// decrypt
-		const { decrypt } = await Cipher.hybridStreamDecrypt(
-			{
+	describe( 'Cipher.stream.HybridDecrypt()', () => {
+
+		it( 'decrypts a file based stream', async () => {
+
+			// input where encrypted data is read
+			const input = fs.createReadStream( encryptedPath )
+			// output where decrypted data is written
+			const output = fs.createWriteStream( decryptedPath )
+			// decrypt
+			await Cipher.stream.HybridDecrypt( {
 				key			: keyPair.privateKey,
 				passphrase	: password,
-				padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-				oaepHash	: 'SHA-256',
-			}, { input, output, rsaKeyLength: rsaBytes }
-		)
-		
-		await decrypt()
+			}, { input, output } )
 
-		const decrypted = fs.readFileSync( decryptedPath )
+			const decrypted = fs.readFileSync( decryptedPath )
+			
+			expect( bufferEquals( decrypted, Buffer.from( dataToEncrypt ) ) )
+				.toBe( true )
 		
-		expect( bufferEquals( decrypted, Buffer.from( dataToEncrypt ) ) )
-			.toBe( true )
-	
+		} )
+
 	} )
 
 } )

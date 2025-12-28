@@ -6,8 +6,8 @@ import { clamp } from '@alessiofrittoli/math-utils'
 import {
 	coerceToUint8Array,
 	CoerceToUint8ArrayInput,
-	readUint16BE,
-	writeUint16BE,
+	readUint32BE,
+	writeUint32BE,
 } from '@alessiofrittoli/crypto-buffer'
 import type { Cph } from '@/types'
 
@@ -248,7 +248,7 @@ export class Cipher
 		)
 
 		return Buffer.concat( [
-			writeUint16BE( EncryptedKey.length ),
+			writeUint32BE( EncryptedKey.length ),
 			EncryptedKey,
 			Cipher.Encrypt( data, Key, options )
 		] )
@@ -275,9 +275,9 @@ export class Cipher
 	{
 
 		const dataBuff			= Buffer.from( coerceToUint8Array( data ) )
-		const rsaKeyLength		= readUint16BE( dataBuff.subarray( 0, 2 ) )
-		const encryptedKey		= dataBuff.subarray( 2, 2 + rsaKeyLength )
-		const encryptedData		= dataBuff.subarray( 2 + rsaKeyLength )
+		const rsaKeyLength		= readUint32BE( dataBuff.subarray( 0, 4 ) )
+		const encryptedKey		= dataBuff.subarray( 4, 4 + rsaKeyLength )
+		const encryptedData		= dataBuff.subarray( 4 + rsaKeyLength )
 		const {
 			privateKey: rsaPrivateKey, passphrase
 		} = Cipher.GetPrivateKey( privateKey )
@@ -354,8 +354,8 @@ export class Cipher
 				output.on( 'error', reject )
 
 				return (
-					Cipher.stream.ExtractKeyLength( input )
-						.then( Cipher.stream.ExtractKeyIV )
+					Cipher._stream.ExtractKeyLength( input )
+						.then( Cipher._stream.ExtractKeyIV )
 						.then( async ( [ EncryptedKeyIV, input ] ) => {
 							
 							input.on( 'error', reject )
@@ -439,8 +439,8 @@ export class Cipher
 					output.on( 'error', reject )
 
 					return (
-						Cipher.stream.ExtractKeyLength( input )
-							.then( Cipher.stream.ExtractKeyIV )
+						Cipher._stream.ExtractKeyLength( input )
+							.then( Cipher._stream.ExtractKeyIV )
 							.then( ( [ EncryptedKeyIV, input ] ) => (
 								{
 									...( Cipher.DecryptKeyIV( {
@@ -483,7 +483,7 @@ export class Cipher
 					output.on( 'error', reject )
 					output.on( 'finish', resolve )
 			
-					output.write( writeUint16BE( encryptedKey.length ) )
+					output.write( writeUint32BE( encryptedKey.length ) )
 					output.write( encryptedKey )
 					input.pipe( cipher ).pipe( output )
 				} )
@@ -511,11 +511,15 @@ export class Cipher
 				} )
 			)
 		},
+	}
+
+
+	private static _stream = {
 		ExtractKeyLength( input: Readable ): Promise<Cph.Stream.ExtractedKeyLength> {
 			return (
-				extractBytesFromReadable( input, 2 )
+				extractBytesFromReadable( input, 4 )
 					.then( ( [ KeyLength, output ] ) => [
-						readUint16BE( KeyLength ), output
+						readUint32BE( KeyLength ), output
 					] )
 			)
 		},

@@ -79,6 +79,51 @@ describe( 'Cipher - In-Memory Stream Encryption/Decryption', () => {
 			
 		} )
 
+		
+		it( 'handles stream errors correctly', async () => {
+
+			const encryptedChunks: Buffer[] = []
+		
+			const input = Readable.from( [
+				Buffer.from( 'Chunk n.1' ),
+				Buffer.from( 'Chunk n.2' ),
+				Buffer.from( 'Chunk n.3' ),
+				Buffer.from( 'Chunk n.4' ),
+			] )
+		
+			// `Writable` Stream where encrypted data is written
+			const output = new Writable( {
+				write( chunk, encoding, callback )
+				{
+					encryptedChunks.push( chunk )
+					callback()
+				}
+			} )
+		
+			await Cipher.stream.Encrypt( password, { input, output } )
+		
+		
+			const decryptInput = Readable.from( encryptedChunks )
+		
+			let chunkN = -1
+			// `Writable` Stream where decrypted data is written
+			const decryptOutput = new Writable( {
+				write( chunk, encoding, callback )
+				{
+					chunkN++
+					if ( chunkN === 2 ) {
+						return callback( new Error( 'Error returned.' ) )
+					}
+					callback()
+				},
+			} )
+		
+			await expect( () => (
+				Cipher.stream.Decrypt( password, { input: decryptInput, output: decryptOutput } )
+			) ).rejects.toThrow( 'Error returned.' )
+		
+		} )
+
 	} )
 
 } )

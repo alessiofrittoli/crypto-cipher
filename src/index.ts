@@ -337,30 +337,34 @@ export class Cipher
 				input, output, algorithm, salt, iv, authTag, length
 			} = Cipher.ResolveOptions<Cph.Stream.DecryptResolvedOptions>( options )
 
-			return (
-				Cipher.stream.ExtractKeyLength( input )
-					.then( Cipher.stream.ExtractKeyIV )
-					.then( ( [ EncryptedKeyIV, input ] ) => {
-						/**
-						 * Check if input has error and re-throw if so.
-						 * This is required since `.on( 'error' )` listeners attached in
-						 * `Cipher.stream.Decipher()` get attached too late (error event already emitted).
-						 */
-						if ( input.errored ) throw input.errored
+			return new Promise<void>( ( resolve, reject ) => {
+				input.on( 'error', reject )
+				output.on( 'error', reject )
 
-						const KeyIV = (
-							Cipher.Decrypt( EncryptedKeyIV, secret, { algorithm, salt, iv, authTag } )
-						)
+				return (
+					Cipher.stream.ExtractKeyLength( input )
+						.then( Cipher.stream.ExtractKeyIV )
+						.then( async ( [ EncryptedKeyIV, input ] ) => {
+							
+							input.on( 'error', reject )
 
-						const Key		= KeyIV.subarray( 0, length )
-						const IV		= KeyIV.subarray( length )
-						const decipher	= crypto.createDecipheriv( algorithm, Key, IV )
+							const KeyIV = (
+								Cipher.Decrypt( EncryptedKeyIV, secret, { algorithm, salt, iv, authTag } )
+							)
 
-						return Cipher.stream.Decipher( {
-							decipher, input, output
+							const Key		= KeyIV.subarray( 0, length )
+							const IV		= KeyIV.subarray( length )
+							const decipher	= crypto.createDecipheriv( algorithm, Key, IV )
+
+							await Cipher.stream.Decipher( {
+								decipher, input, output
+							} )
+
+							resolve()
 						} )
-					} )
-			)
+						.catch( reject )
+				)
+			} )
 
 		},
 		/**
@@ -418,23 +422,34 @@ export class Cipher
 			)
 
 			return (
-				Cipher.stream.ExtractKeyLength( input )
-					.then( Cipher.stream.ExtractKeyIV )
-					.then( ( [ EncryptedKeyIV, input ] ) => (
-						{
-							...( Cipher.DecryptKeyIV( {
-								privateKey, EncryptedKeyIV, keyLength,
-							} ) ),
-							input,
-						}
-					) )
-					.then( ( { Key, IV, input } ) => {
-						const decipher = crypto.createDecipheriv( algorithm, Key, IV )
+				new Promise<void>( ( resolve, reject ) => {
+					input.on( 'error', reject )
+					output.on( 'error', reject )
 
-						return Cipher.stream.Decipher(
-							{ decipher, input, output }
-						)
-					} )
+					return (
+						Cipher.stream.ExtractKeyLength( input )
+							.then( Cipher.stream.ExtractKeyIV )
+							.then( ( [ EncryptedKeyIV, input ] ) => (
+								{
+									...( Cipher.DecryptKeyIV( {
+										privateKey, EncryptedKeyIV, keyLength,
+									} ) ),
+									input,
+								}
+							) )
+							.then( async ( { Key, IV, input } ) => {
+								input.on( 'error', reject )
+								const decipher = crypto.createDecipheriv( algorithm, Key, IV )
+
+								await Cipher.stream.Decipher(
+									{ decipher, input, output }
+								)
+								
+								resolve()
+							} )
+							.catch( reject )
+					)
+				} )
 			)
 
 		},

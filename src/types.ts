@@ -1,11 +1,12 @@
 import type {
-	CipherCCMTypes, CipherGCMTypes, CipherOCBTypes, CipherChaCha20Poly1305Types,
+	// CipherCCMTypes, CipherGCMTypes, CipherOCBTypes, CipherChaCha20Poly1305Types,
 	KeyLike,
 	Cipheriv,
 	Decipheriv
 } from 'crypto'
 import type { Readable, Transform, Writable } from 'stream'
 import type { CoerceToUint8ArrayInput } from '@alessiofrittoli/crypto-buffer'
+import type { Cipher } from '.'
 
 
 /**
@@ -18,11 +19,13 @@ export namespace Cph
 	export type CBCTypes = 'aes-128-cbc' | 'aes-192-cbc' | 'aes-256-cbc'
 	
 	
+	// /** Cipher supported algorithm types. */
+	// export type AesAlgorithm = (
+	// 	| CipherCCMTypes | CipherGCMTypes
+	// 	| CipherOCBTypes | Cph.CBCTypes | CipherChaCha20Poly1305Types
+	// )
 	/** Cipher supported algorithm types. */
-	export type AesAlgorithm = (
-		| CipherCCMTypes | CipherGCMTypes
-		| CipherOCBTypes | Cph.CBCTypes | CipherChaCha20Poly1305Types
-	)
+	export type AesAlgorithm = typeof Cipher.ALGORITHM[ keyof typeof Cipher.ALGORITHM ]
 
 
 	/**

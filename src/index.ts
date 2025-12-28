@@ -58,13 +58,30 @@ export class Cipher
 	} as const
 	
 
+	static readonly ALGORITHM = {
+		AES_128_CBC: 'aes-128-cbc',
+		AES_192_CBC: 'aes-192-cbc',
+		AES_256_CBC: 'aes-256-cbc',
+		AES_128_CCM: 'aes-128-ccm',
+		AES_192_CCM: 'aes-192-ccm',
+		AES_256_CCM: 'aes-256-ccm',
+		AES_128_GCM: 'aes-128-gcm',
+		AES_192_GCM: 'aes-192-gcm',
+		AES_256_GCM: 'aes-256-gcm',
+		AES_128_OCB: 'aes-128-ocb',
+		AES_192_OCB: 'aes-192-ocb',
+		AES_256_OCB: 'aes-256-ocb',
+		CHACHA_20_POLY: 'chacha20-poly1305',
+	} as const
+
+
 	/**
 	 * Default AES algorithms used based on functionality.
 	 * 
 	 */
 	static readonly DEFAULT_ALGORITHM = {
-		buffer: 'aes-256-gcm',
-		stream: 'aes-256-cbc',
+		buffer: Cipher.ALGORITHM.AES_256_GCM,
+		stream: Cipher.ALGORITHM.AES_256_CBC,
 	} as const
 
 
@@ -72,12 +89,7 @@ export class Cipher
 	 * Supported AES algorithms.
 	 * 
 	 */
-	static readonly ALGORITHMS: Cph.AesAlgorithm[] = [
-		'aes-128-cbc', 'aes-128-ccm', 'aes-128-gcm', 'aes-128-ocb',
-		'aes-192-cbc', 'aes-192-ccm', 'aes-192-gcm', 'aes-192-ocb',
-		'aes-256-cbc', 'aes-256-ccm', 'aes-256-gcm', 'aes-256-ocb',
-		'chacha20-poly1305'
-	] as const
+	static readonly ALGORITHMS: Cph.AesAlgorithm[] = Object.values( Cipher.ALGORITHM )
 	
 	
 	/**
@@ -120,7 +132,7 @@ export class Cipher
 		)
 		
 		
-		if ( Cipher.IsCCM( algorithm ) ) {
+		if ( Cipher.IsCCM( algorithm ) || Cipher.IsChacha20Poly( algorithm ) ) {
 			// AES-CCM requires `plaintextLength`
 			cipher.setAAD( AAD, { plaintextLength: _data.length } )
 		}
@@ -189,7 +201,7 @@ export class Cipher
 			)
 		)
 
-		if ( Cipher.IsCCM( algorithm ) ) {
+		if ( Cipher.IsCCM( algorithm ) || Cipher.IsChacha20Poly( algorithm ) ) {
 			// AES-CCM requires `plaintextLength`
 			decipher.setAAD( AAD, { plaintextLength: _data.length } )
 		}
@@ -633,14 +645,14 @@ export class Cipher
 	)
 	{
 		switch ( algorithm ) {
-			case 'aes-128-ccm':
-			case 'aes-128-ocb':
-			case 'aes-192-ccm':
-			case 'aes-192-ocb':
-			case 'aes-256-ccm':
-			case 'aes-256-ocb':
+			case Cipher.ALGORITHM.AES_128_CCM:
+			case Cipher.ALGORITHM.AES_192_CCM:
+			case Cipher.ALGORITHM.AES_256_CCM:
+			case Cipher.ALGORITHM.AES_128_OCB:
+			case Cipher.ALGORITHM.AES_192_OCB:
+			case Cipher.ALGORITHM.AES_256_OCB:
 				return 8
-			case 'chacha20-poly1305':
+			case Cipher.ALGORITHM.CHACHA_20_POLY:
 				return 12
 			default:
 				return clamp(
@@ -663,31 +675,31 @@ export class Cipher
 	)
 	{
 		switch ( algorithm ) {
-			case 'chacha20-poly1305':
+			case Cipher.ALGORITHM.CHACHA_20_POLY:
 				return {
 					algorithm: algorithm,
 					keyLength: 256 / 8,
 				} as const
-			case 'aes-128-cbc':
-			case 'aes-128-ccm':
-			case 'aes-128-gcm':
-			case 'aes-128-ocb':
+			case Cipher.ALGORITHM.AES_128_CBC:
+			case Cipher.ALGORITHM.AES_128_CCM:
+			case Cipher.ALGORITHM.AES_128_GCM:
+			case Cipher.ALGORITHM.AES_128_OCB:
 				return {
 					algorithm: algorithm,
 					keyLength: 128 / 8, // AES-128 needs a 128 bit (16 bytes)
 				} as const
-			case 'aes-192-cbc':
-			case 'aes-192-ccm':
-			case 'aes-192-gcm':
-			case 'aes-192-ocb':
+			case Cipher.ALGORITHM.AES_192_CBC:
+			case Cipher.ALGORITHM.AES_192_CCM:
+			case Cipher.ALGORITHM.AES_192_GCM:
+			case Cipher.ALGORITHM.AES_192_OCB:
 				return {
 					algorithm: algorithm,
 					keyLength: 192 / 8, // AES-192 needs a 192 bit (24 bytes)
 				} as const
-			case 'aes-256-cbc':
-			case 'aes-256-ccm':
-			case 'aes-256-gcm':
-			case 'aes-256-ocb':
+			case Cipher.ALGORITHM.AES_256_CBC:
+			case Cipher.ALGORITHM.AES_256_CCM:
+			case Cipher.ALGORITHM.AES_256_GCM:
+			case Cipher.ALGORITHM.AES_256_OCB:
 			default:
 				return {
 					algorithm: algorithm,
@@ -706,9 +718,9 @@ export class Cipher
 	static IsGCM( algorithm: Cph.AesAlgorithm ): algorithm is crypto.CipherGCMTypes
 	{
 		return (
-			algorithm === 'aes-128-gcm' ||
-			algorithm === 'aes-192-gcm' ||
-			algorithm === 'aes-256-gcm'
+			algorithm === Cipher.ALGORITHM.AES_128_GCM ||
+			algorithm === Cipher.ALGORITHM.AES_192_GCM ||
+			algorithm === Cipher.ALGORITHM.AES_256_GCM
 		)
 	}
 
@@ -722,10 +734,23 @@ export class Cipher
 	static IsCCM( algorithm: Cph.AesAlgorithm ): algorithm is crypto.CipherCCMTypes
 	{
 		return (
-			algorithm === 'aes-128-ccm' ||
-			algorithm === 'aes-192-ccm' ||
-			algorithm === 'aes-256-ccm' ||
-			algorithm === 'chacha20-poly1305'
+			algorithm === Cipher.ALGORITHM.AES_128_CCM ||
+			algorithm === Cipher.ALGORITHM.AES_192_CCM ||
+			algorithm === Cipher.ALGORITHM.AES_256_CCM
+		)
+	}
+	
+	
+	/**
+	 * Check if the given algorithm is a Cipher chacha20-poly1305 algorithm.
+	 * 
+	 * @param algorithm The AES Algorithm to check.
+	 * @returns `true` if the given algorithm is a Cipher chacha20-poly1305 algorithm. `false` otherwise.
+	 */
+	static IsChacha20Poly( algorithm: Cph.AesAlgorithm ): algorithm is crypto.CipherChaCha20Poly1305Types
+	{
+		return (
+			algorithm === Cipher.ALGORITHM.CHACHA_20_POLY
 		)
 	}
 
@@ -739,9 +764,9 @@ export class Cipher
 	static IsOCB( algorithm: Cph.AesAlgorithm ): algorithm is crypto.CipherOCBTypes
 	{
 		return (
-			algorithm === 'aes-128-ocb' ||
-			algorithm === 'aes-192-ocb' ||
-			algorithm === 'aes-256-ocb'
+			algorithm === Cipher.ALGORITHM.AES_128_OCB ||
+			algorithm === Cipher.ALGORITHM.AES_192_OCB ||
+			algorithm === Cipher.ALGORITHM.AES_256_OCB
 		)
 	}
 
@@ -755,9 +780,9 @@ export class Cipher
 	static IsCBC( algorithm: Cph.AesAlgorithm ): algorithm is Cph.CBCTypes
 	{
 		return (
-			algorithm === 'aes-128-cbc' ||
-			algorithm === 'aes-192-cbc' ||
-			algorithm === 'aes-256-cbc'
+			algorithm === Cipher.ALGORITHM.AES_128_CBC ||
+			algorithm === Cipher.ALGORITHM.AES_192_CBC ||
+			algorithm === Cipher.ALGORITHM.AES_256_CBC
 		)
 	}
 

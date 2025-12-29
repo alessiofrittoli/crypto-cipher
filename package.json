@@ -1,6 +1,6 @@
 {
 	"name": "@alessiofrittoli/crypto-cipher",
-	"version": "3.0.0-alpha.3",
+	"version": "3.0.0-alpha.4",
 	"description": "Node.js Cipher cryptograph utility library",
 	"author": {
 		"name": "Alessio Frittoli",

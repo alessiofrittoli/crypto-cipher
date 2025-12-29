@@ -37,6 +37,7 @@ describe( 'Cipher - In-Memory Hybrid Encryption/Decryption', () => {
 
 		} )
 
+
 		it( 'optionally supports PrivateKey passphares', () => {
 			
 			const password = 'verystrong-password'
@@ -44,7 +45,12 @@ describe( 'Cipher - In-Memory Hybrid Encryption/Decryption', () => {
 			const keypair = crypto.generateKeyPairSync( 'rsa', {
 				modulusLength		: 256 * 8,
 				publicKeyEncoding	: { type: 'spki', format: 'pem' },
-				privateKeyEncoding	: { type: 'pkcs8', format: 'pem', passphrase: password, cipher: 'aes-256-cbc' },
+				privateKeyEncoding	: {
+					type		: 'pkcs8',
+					format		: 'pem',
+					passphrase	: password,
+					cipher		: Cipher.ALGORITHM.AES_256_CBC,
+				}
 			} )
 
 

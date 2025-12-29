@@ -113,6 +113,6 @@
 	"dependencies": {
 		"@alessiofrittoli/crypto-buffer": "^3.10.0",
 		"@alessiofrittoli/math-utils": "^1.17.0",
-		"@alessiofrittoli/stream-reader": "2.7.0-alpha.2"
+		"@alessiofrittoli/stream-reader": "2.7.0-alpha.3"
 	}
 }

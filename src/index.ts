@@ -56,21 +56,38 @@ export class Cipher
 		max		: 128,
 		default	: 32,
 	} as const
-	
 
+
+	/**
+	 * Cipher algorithm name.
+	 * 
+	 */
 	static readonly ALGORITHM = {
+		/** AES 128 bit Cipher Block Chaining. */
 		AES_128_CBC: 'aes-128-cbc',
+		/** AES 192 bit Cipher Block Chaining. */
 		AES_192_CBC: 'aes-192-cbc',
+		/** AES 256 bit Cipher Block Chaining. */
 		AES_256_CBC: 'aes-256-cbc',
+		/** AES 128 bit AEAD Counter with CBC-MAC. */
 		AES_128_CCM: 'aes-128-ccm',
+		/** AES 192 bit AEAD Counter with CBC-MAC. */
 		AES_192_CCM: 'aes-192-ccm',
+		/** AES 256 bit AEAD Counter with CBC-MAC. */
 		AES_256_CCM: 'aes-256-ccm',
+		/** AES 128 bit AEAD Galois/Counter Mode. */
 		AES_128_GCM: 'aes-128-gcm',
+		/** AES 192 bit AEAD Galois/Counter Mode. */
 		AES_192_GCM: 'aes-192-gcm',
+		/** AES 256 bit AEAD Galois/Counter Mode. */
 		AES_256_GCM: 'aes-256-gcm',
+		/** AES 128 bit AEAD Offset Codebook Mode. */
 		AES_128_OCB: 'aes-128-ocb',
+		/** AES 192 bit AEAD Offset Codebook Mode. */
 		AES_192_OCB: 'aes-192-ocb',
+		/** AES 256 bit AEAD Offset Codebook Mode. */
 		AES_256_OCB: 'aes-256-ocb',
+		/** AES 256 bit AEAD. */
 		CHACHA_20_POLY: 'chacha20-poly1305',
 	} as const
 
@@ -95,11 +112,11 @@ export class Cipher
 	/**
 	 * Encrypt in-memory data buffer.
 	 *
-	 * ⚠️ This is not suitable for large data. Use {@link Cipher.StreamEncrypt()} or {@link Cipher.HybridStreamEncrypt()} methods for large data encryption.
+	 * ⚠️ This is not suitable for large data encryption. Use {@link Cipher.stream.Encrypt()} or {@link Cipher.stream.HybridEncrypt()} methods for large data encryption.
 	 *
 	 * @param	data	The data to encrypt.
 	 * @param	secret	The secret key used to encrypt the `data`.
-	 * @param	options	( Optional ) Additional options.
+	 * @param	options	(Optional) Additional options.
 	 * @returns	The encrypted result Buffer.
 	 */
 	static Encrypt(
@@ -152,11 +169,11 @@ export class Cipher
 	/**
 	 * Decrypt in-memory data buffer.
 	 *
-	 * ⚠️ This is not suitable for large data. Use {@link Cipher.StreamDecrypt()} or {@link Cipher.HybridStreamDecrypt()} methods for large data decryption.
+	 * ⚠️ This is not suitable for large data decryption. Use {@link Cipher.stream.Decrypt()} or {@link Cipher.stream.HybridDecrypt()} methods for large data decryption.
 	 *
 	 * @param	data	The data to decrypt.
 	 * @param	secret	The secret key used to decrypt the `data`.
-	 * @param	options	( Optional ) Additional options. Must be the same used while encrypting data.
+	 * @param	options	(Optional) Additional options. Must be the same used while encrypting data.
 	 * @returns	The decrypted data Buffer.
 	 */
 	static Decrypt(
@@ -222,17 +239,17 @@ export class Cipher
 	/**
 	 * Encrypt in-memory data using hybrid encryption.
 	 * 
-	 * ⚠️ This is not suitable for large data. Use {@link Cipher.HybridStreamEncrypt()} method for large data encryption.
+	 * ⚠️ This is not suitable for large data encryption. Use {@link Cipher.stream.HybridEncrypt()} method for large data encryption.
 	 * 
-	 * @param	data		The data to encrypt.
-	 * @param	publicKey	The public key.
-	 * @param	options		( Optional ) Additional options.
+	 * @param	data	The data to encrypt.
+	 * @param	key		The RSA Public Key.
+	 * @param	options	(Optional) Additional options.
 	 * 
 	 * @returns	The encrypted result Buffer.
 	 */
 	static HybridEncrypt(
 		data		: CoerceToUint8ArrayInput,
-		publicKey	: crypto.KeyLike,
+		key			: crypto.KeyLike,
 		options?	: Cph.Options,
 	)
 	{
@@ -241,7 +258,7 @@ export class Cipher
 
 		const EncryptedKey = (
 			crypto.publicEncrypt( {
-				key			: publicKey,
+				key			: key,
 				padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
 				oaepHash	: 'sha256',
 			}, Key )
@@ -261,15 +278,15 @@ export class Cipher
 	 * 
 	 * ⚠️ This is not suitable for large data. Use {@link Cipher.stream.HybridDecrypt()} method for large data encryption.
 	 * 
-	 * @param	data		The encrypted data to decrypt.
-	 * @param	privateKey	The private key.
-	 * @param	options		( Optional ) Additional options.
+	 * @param	data	The encrypted data to decrypt.
+	 * @param	key		The RSA Private Key.
+	 * @param	options	(Optional) Additional options.
 	 * 
 	 * @returns	The encrypted result Buffer.
 	 */
 	static HybridDecrypt(
 		data		: CoerceToUint8ArrayInput,
-		privateKey	: Cph.PrivateKey,
+		key			: Cph.PrivateKey,
 		options?	: Cph.Options,
 	)
 	{
@@ -278,13 +295,14 @@ export class Cipher
 		const rsaKeyLength		= readUint32BE( dataBuff.subarray( 0, 4 ) )
 		const encryptedKey		= dataBuff.subarray( 4, 4 + rsaKeyLength )
 		const encryptedData		= dataBuff.subarray( 4 + rsaKeyLength )
+		
 		const {
-			privateKey: rsaPrivateKey, passphrase
-		} = Cipher.GetPrivateKey( privateKey )
+			privateKey, passphrase
+		} = Cipher.GetPrivateKey( key )
 
 		const decryptedKey = (
 			crypto.privateDecrypt( {
-				key			: rsaPrivateKey,
+				key			: privateKey,
 				passphrase	: passphrase,
 				padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
 				oaepHash	: 'sha256',
@@ -349,8 +367,8 @@ export class Cipher
 			const {
 				input, output, algorithm, length, salt, iv,
 			} = Cipher.ResolveOptions<Cph.Stream.EncryptResolvedOptions>( options )
-
-			const [ SaltIV, newInput ] = await extractBytesFromReadable( input, salt + iv )
+			
+			const [ SaltIV, rest ] = await extractBytesFromReadable( input, salt + iv )
 
 			const Salt		= SaltIV.subarray( 0, salt )
 			const IV		= SaltIV.subarray( salt )
@@ -358,21 +376,21 @@ export class Cipher
 			const decipher	= crypto.createDecipheriv( algorithm, Key, IV )
 
 			return Cipher.stream.Decipher( {
-				decipher, input: newInput, output
+				decipher, input: rest, output
 			} )
 
 		},
 		/**
 		 * Encrypt stream data using hybrid encryption.
 		 * 
-		 * @param	publicKey	The public key.
-		 * @param	options		An object defining required options. See {@link Cph.Stream.EncryptOptions} for more info.
+		 * @param	key		The RSA Public Key.
+		 * @param	options	An object defining required options. See {@link Cph.Stream.EncryptOptions} for more info.
 		 * 
 		 * @returns	A new Promise that resolves `void` once stream encryption is completed.
 		 */
 		HybridEncrypt(
-			publicKey	: crypto.KeyLike,
-			options		: Cph.Stream.EncryptOptions,
+			key		: crypto.KeyLike,
+			options	: Cph.Stream.EncryptOptions,
 		) {
 
 			options.algorithm ||= Cipher.DEFAULT_ALGORITHM.stream
@@ -384,7 +402,7 @@ export class Cipher
 
 			const encryptedKey = (
 				crypto.publicEncrypt( {
-					key			: publicKey,
+					key			: key,
 					padding		: crypto.constants.RSA_PKCS1_OAEP_PADDING,
 					oaepHash	: 'sha256',
 				}, Buffer.concat( [ Key, IV ] ) )
@@ -400,14 +418,14 @@ export class Cipher
 		/**
 		 * Decrypt stream data using hybrid decryption.
 		 * 
-		 * @param	privateKey	The private key.
-		 * @param	options		An object defining required options. See {@link Cph.Stream.DecryptOptions} for more info.
+		 * @param	key		The private key.
+		 * @param	options	An object defining required options. See {@link Cph.Stream.DecryptOptions} for more info.
 		 * 
 		 * @returns	A new Promise that resolves `void` once stream decryption is completed.
 		 */
 		HybridDecrypt(
-			privateKey	: Cph.PrivateKey,
-			options		: Cph.Stream.DecryptOptions,
+			key		: Cph.PrivateKey,
+			options	: Cph.Stream.DecryptOptions,
 		) {
 
 			const { input, output } = options
@@ -427,7 +445,7 @@ export class Cipher
 							.then( ( [ EncryptedKeyIV, input ] ) => (
 								{
 									...( Cipher.DecryptKeyIV( {
-										privateKey, EncryptedKeyIV, keyLength,
+										privateKey: key, EncryptedKeyIV, keyLength,
 									} ) ),
 									input,
 								}
@@ -564,7 +582,7 @@ export class Cipher
 	 * 
 	 * @returns An object with the generated `Key`, `IV`, `salt` and resolved `options`. 
 	 */
-	static NewKeyIV<T extends Cph.ResolvedOptions = Cph.ResolvedOptions>(
+	private static NewKeyIV<T extends Cph.ResolvedOptions = Cph.ResolvedOptions>(
 		options	: Cph.NewKeyIVOptions = {},
 	)
 	{
@@ -583,7 +601,7 @@ export class Cipher
 	/**
 	 * Resolves the given `options` with `Cipher` defaults and constraints.
 	 * 
-	 * @param options ( Optional ) Additional options.
+	 * @param options (Optional) Additional options.
 	 * @returns The given `options` with `Cipher` defaults and constraints.
 	 */
 	private static ResolveOptions<
@@ -625,10 +643,10 @@ export class Cipher
 	 * Get the Initialization Vector length based on the given algorithm.
 	 * 
 	 * @param	algorithm The algorithm in use.
-	 * @param	options ( Optional ) Additional options. 
+	 * @param	options (Optional) Additional options. 
 	 * @returns	The Initialization Vector length based on the given algorithm
 	 */
-	static GetIVLength(
+	private static GetIVLength(
 		algorithm	: Cph.Options[ 'algorithm' ] = Cipher.DEFAULT_ALGORITHM.buffer,
 		options		: Cph.Options = {},
 	)
@@ -659,7 +677,7 @@ export class Cipher
 	 * @param	algorithm The AES algorithm name.
 	 * @returns	An object with validated `algorithm` and `keyLength`.
 	 */
-	static GetKeyLength(
+	private static GetKeyLength(
 		algorithm: Cph.Options[ 'algorithm' ] = Cipher.DEFAULT_ALGORITHM.buffer
 	)
 	{

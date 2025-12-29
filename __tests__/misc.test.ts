@@ -5,7 +5,7 @@ describe( 'Cipher.GetIVLength()', () => {
 
 	it( 'initialises with undefined options', async () => {
 
-		expect( Cipher.GetIVLength() ).toBe( 16 )
+		expect( Cipher[ 'GetIVLength' ]() ).toBe( 16 )
 
 	} )
 
@@ -34,7 +34,7 @@ describe( 'Cipher.NewKeyIV()', () => {
 
 	it( 'initialises with undefined options', () => {
 
-		const { options, Key, IV, AAD, salt } = Cipher.NewKeyIV()
+		const { options, Key, IV, AAD, salt } = Cipher[ 'NewKeyIV' ]()
 
 		expect( Key ).toBeInstanceOf( Buffer )
 		expect( Key.length ).toBe( 32 ) // value based on algorithm

@@ -13,7 +13,12 @@ describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
 	const keyPair	= crypto.generateKeyPairSync( 'rsa', {
 		modulusLength		: rsaBytes * 8, // 4096 bits
 		publicKeyEncoding	: { type: 'spki', format: 'pem' },
-		privateKeyEncoding	: { type: 'pkcs1', format: 'pem', passphrase: password, cipher: 'aes-256-cbc' }
+		privateKeyEncoding	: {
+			type		: 'pkcs1',
+			format		: 'pem',
+			passphrase	: password,
+			cipher		: Cipher.ALGORITHM.CHACHA_20_POLY,
+		}
 	} )
 
 

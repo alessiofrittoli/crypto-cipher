@@ -22,16 +22,19 @@
 
 - [Getting started](#getting-started)
 - [Key features](#key-features)
+- [What's changed](#whats-changed)
+- [Migration guide](#migration-guide)
 - [API Reference](#api-reference)
-  - [Importing the library](#importing-the-library)
   - [Constants](#constants)
   - [Methods](#methods)
-    - [`Cipher.encrypt()`](#cipherencrypt)
-    - [`Cipher.decrypt()`](#cipherdecrypt)
-    - [`Cipher.streamEncrypt()`](#cipherstreamencrypt)
-    - [`Cipher.streamDecrypt()`](#cipherstreamencrypt)
-    - [`Cipher.hybridStreamEncrypt()`](#cipherhybridstreamencrypt)
-    - [`Cipher.hybridStreamDecrypt()`](#cipherhybridstreamdecrypt)
+    - [`Cipher.Encrypt()`](#cipherencrypt)
+    - [`Cipher.Decrypt()`](#cipherdecrypt)
+    - [`Cipher.HybridEncrypt()`](#cipherhybridencrypt)
+    - [`Cipher.HybridDecrypt()`](#cipherhybriddecrypt)
+    - [`Cipher.stream.Encrypt()`](#cipherstreamencrypt)
+    - [`Cipher.stream.Decrypt()`](#cipherstreamdecrypt)
+    - [`Cipher.stream.HybridEncrypt()`](#cipherstreamhybridencrypt)
+    - [`Cipher.stream.HybridDecrypt()`](#cipherstreamhybriddecrypt)
   - [Types](#types)
 - [Examples](#examples)
   - [In-memory data buffer encryption/decryption](#in-memory-data-buffer-encryptiondecryption)
@@ -72,22 +75,35 @@ pnpm i @alessiofrittoli/crypto-cipher
 
 - Supports multiple AES algorithms (`CCM`, `GCM`, `OCB`, `CBC`) and even `chacha20-poly1305`.
 - In-memory buffer encryption and decrpytion.
-- Robust support for encrypting and decrypting streams (in-memory and file based), with seamless handling of key/IV extraction.
+- Robust support for encrypting and decrypting streams (in-memory and file based).
 - Hybrid encryption methods for combining symmetric and asymmetric cryptography.
-
-#### Options Management
-
-- A solid options resolver mechanism ensures consistent handling of defaults and constraints.
 
 #### Security Considerations
 
 - Random `salt` and `IV` generation.
-- Authenticated encryption modes with proper `authTag` and `Additional Authenticated Data` handling.
+- AEAD - Authenticated encryption modes with proper `authTag` and `Additional Authenticated Data` handling.
 
 #### Readable and Modular
 
 - Separation of concerns with clear method responsibilities.
 - Comprehensive JSDoc comments enhance maintainability and readability.
+
+---
+
+### What's Changed
+
+🎉 Updates in the latest release:
+
+- ....
+- ....
+
+---
+
+### Migration guide
+
+#### Migrating from v2.x.x to v3.0.0
+
+....
 
 ---
 
@@ -170,10 +186,37 @@ Specifies default AES algorithms for buffer and stream operations.
 <details>
 <summary>Properties</summary>
 
-| Operation | Algorithm     | Description                                                  |
-| --------- | ------------- | ------------------------------------------------------------ |
-| `buffer`  | `aes-256-gcm` | Default algorithm used for buffer data encryption/decryption |
-| `stream`  | `aes-256-cbc` | Default algorithm used for stream encryption/decryption      |
+| Operation | Algorithm     | Description                                                                           |
+| --------- | ------------- | ------------------------------------------------------------------------------------- |
+| `buffer`  | `aes-256-gcm` | Default algorithm used for buffer data encryption/decryption                          |
+| `stream`  | `aes-256-cbc` | Default algorithm used for stream encryption/decryption (Cipher Block Chaining mode). |
+
+</details>
+
+---
+
+##### `Cipher.ALGORITHM`
+
+An object defining algorithm names.
+
+<details>
+<summary>Properties</summary>
+
+| Property         | Value               |
+| ---------------- | ------------------- |
+| `AES_128_CBC`    | 'aes-128-cbc'       |
+| `AES_192_CBC`    | 'aes-192-cbc'       |
+| `AES_256_CBC`    | 'aes-256-cbc'       |
+| `AES_128_CCM`    | 'aes-128-ccm'       |
+| `AES_192_CCM`    | 'aes-192-ccm'       |
+| `AES_256_CCM`    | 'aes-256-ccm'       |
+| `AES_128_GCM`    | 'aes-128-gcm'       |
+| `AES_192_GCM`    | 'aes-192-gcm'       |
+| `AES_256_GCM`    | 'aes-256-gcm'       |
+| `AES_128_OCB`    | 'aes-128-ocb'       |
+| `AES_192_OCB`    | 'aes-192-ocb'       |
+| `AES_256_OCB`    | 'aes-256-ocb'       |
+| `CHACHA_20_POLY` | 'chacha20-poly1305' |
 
 </details>
 
@@ -181,37 +224,18 @@ Specifies default AES algorithms for buffer and stream operations.
 
 ##### `Cipher.ALGORITHMS`
 
-Supported AES algorithms:
-
-<details>
-<summary>Properties</summary>
-
-- `aes-128-gcm`
-- `aes-192-gcm`
-- `aes-256-gcm`
-- `aes-128-ccm`
-- `aes-192-ccm`
-- `aes-256-ccm`
-- `aes-128-ocb`
-- `aes-192-ocb`
-- `aes-256-ocb`
-- `aes-128-cbc`
-- `aes-192-cbc`
-- `aes-256-cbc`
-- `chacha20-poly1305`
-
-</details>
+An array of supported AES algorithms. This array includes all values in [`Cipher.ALGORITHM`](#cipheralgorithm) constant.
 
 ---
 
 #### Methods
 
-##### `Cipher.encrypt()`
+##### `Cipher.Encrypt()`
 
 Encrypts an in-memory data buffer.
 
-⚠️ This is not suitable for large data.
-Use [`Cipher.streamEncrypt()`](#cipherstreamencrypt) or [`Cipher.hybridStreamEncrypt()`](#cipherhybridStreamEncrypt) methods for large data encryption.
+> [!WARNING]
+> This is not suitable for large data encryption. Use {@link Cipher.stream.Encrypt()} or {@link Cipher.stream.HybridEncrypt()} methods for large data encryption.
 
 <details>
 
@@ -233,7 +257,7 @@ Use [`Cipher.streamEncrypt()`](#cipherstreamencrypt) or [`Cipher.hybridStreamEnc
 
 Type: `Buffer`
 
-- The encrypted result buffer.
+The encrypted result buffer.
 
 </details>
 
@@ -245,12 +269,12 @@ Type: `Buffer`
 
 ---
 
-##### `Cipher.decrypt()`
+##### `Cipher.Decrypt()`
 
 Decrypts an in-memory data buffer.
 
-⚠️ This is not suitable for large data.
-Use [`Cipher.streamDecrypt()`](#cipherstreamdecrypt) or [`Cipher.hybridStreamDecrypt()`](#cipherhybridStreamDecrypt) methods for large data decryption.
+> [!WARNING]
+> This is not suitable for large data encryption. Use {@link Cipher.stream.Encrypt()} or {@link Cipher.stream.HybridEncrypt()} methods for large data encryption.
 
 <details>
 
@@ -272,7 +296,7 @@ Use [`Cipher.streamDecrypt()`](#cipherstreamdecrypt) or [`Cipher.hybridStreamDec
 
 Type: `Buffer`
 
-- The decrypted result buffer.
+The decrypted result buffer.
 
 </details>
 
@@ -284,18 +308,22 @@ Type: `Buffer`
 
 ---
 
-##### `Cipher.streamEncrypt()`
+##### `Cipher.HybridEncrypt()`
 
-Encrypts a `Readable` stream to a `Writable` stream.
+Encrypts in-memory data using hybrid encryption.
+
+> [!WARNING]
+> This is not suitable for large data encryption. Use {@link Cipher.stream.HybridEncrypt()} method for large data encryption.
 
 <details>
 
-<summary>Parameters</summary>
+<summary style="cursor:pointer">Parameters</summary>
 
-| Name      | Type                                  | Description                |
-| --------- | ------------------------------------- | -------------------------- |
-| `secret`  | `CoerceToUint8ArrayInput`             | Secret key for encryption. |
-| `options` | `Cph.Stream.Symmetric.EncryptOptions` | Stream encryption options. |
+| Parameter | Type                      | Default | Description                    |
+| --------- | ------------------------- | ------- | ------------------------------ |
+| `data`    | `CoerceToUint8ArrayInput` | -       | The data to encrypt.           |
+| `key`     | `crypto.KeyLike`          | -       | The RSA Public Key.            |
+| `options` | `Cph.Options`             | -       | (Optional) Additional options. |
 
 </details>
 
@@ -305,35 +333,36 @@ Encrypts a `Readable` stream to a `Writable` stream.
 
 <summary>Returns</summary>
 
-Type: `Cph.Stream.Symmetric.EncryptReturnType`
+Type: `Buffer`
 
-- An object containing:
-  - a new instance of `crypto.Cipheriv` allowing you to add listeners to the `cipher` encryption process.
-  - the actual `encrypt` callback that must be called and awaited in order to start the encryption process.
+The encrypted result buffer.
 
 </details>
 
 ---
 
 - See [`CoerceToUint8ArrayInput`](#coercetouint8arrayinput) for more informations about supported input data types.
-- See [`Cph.Stream.Symmetric.EncryptOptions`](#cphstreamsymmetricencryptoptions) for more informations about encryption options.
-- See [In-memory data stream encryption/decryption](#in-memory-data-stream-encryptiondecryption) examples.
-- See [File based data stream encryption/decryption](#file-based-data-stream-encryptiondecryption) examples.
+- See [`Cph.Options`](#cphoptionst) for more informations about additional decryption options.
+- See [In-memory data buffer hybrid encryption/decryption](#in-memory-data-buffer-hybrid-encryptiondecryption) example.
 
 ---
 
-##### `Cipher.streamDecrypt()`
+##### `Cipher.HybridDecrypt()`
 
-Decrypts a `Readable` stream to a `Writable` stream.
+Decrypts in-memory data using hybrid encryption.
+
+> [!WARNING]
+> This is not suitable for large data encryption. Use {@link Cipher.stream.HybridDecrypt()} method for large data encryption.
 
 <details>
 
-<summary>Parameters</summary>
+<summary style="cursor:pointer">Parameters</summary>
 
-| Name      | Type                                  | Description                |
-| --------- | ------------------------------------- | -------------------------- |
-| `secret`  | `CoerceToUint8ArrayInput`             | Secret key for decryption. |
-| `options` | `Cph.Stream.Symmetric.DecryptOptions` | Stream decryption options. |
+| Parameter | Type                      | Default | Description                    |
+| --------- | ------------------------- | ------- | ------------------------------ |
+| `data`    | `CoerceToUint8ArrayInput` | -       | The data to encrypt.           |
+| `key`     | `Cph.PrivateKey`          | -       | The RSA Private Key.           |
+| `options` | `Cph.Options`             | -       | (Optional) Additional options. |
 
 </details>
 
@@ -341,76 +370,102 @@ Decrypts a `Readable` stream to a `Writable` stream.
 
 <details>
 
-<summary>Returns</summary>
+<summary style="cursor:pointer">Returns</summary>
 
-Type: `Promise<Cph.Stream.Symmetric.DecryptReturnType>`
+Type: `Buffer`.
 
-- A new Promise that resolves when Key IV extraction completes returning an object containing:
-  - a new instance of `crypto.Decipheriv` allowing you to add listeners to the `decipher` decryption process.
-  - the actual `decrypt` callback that must be called and awaited in order to start the decryption process.
-
-</details>
-
----
-
-- See [`CoerceToUint8ArrayInput`](#coercetouint8arrayinput) for more informations about supported input data types.
-- See [`Cph.Stream.Symmetric.DecryptOptions`](#cphstreamsymmetricdecryptoptions) for more informations about decryption options.
-- See [In-memory data stream encryption/decryption](#in-memory-data-stream-encryptiondecryption) examples.
-- See [File based data stream encryption/decryption](#file-based-data-stream-encryptiondecryption) examples.
-
----
-
-##### `Cipher.hybridStreamEncrypt()`
-
-Encrypts a stream using hybrid encryption (symmetric + RSA).
-
-<details>
-
-<summary>Parameters</summary>
-
-| Name        | Type                                    | Description                                                 |
-| ----------- | --------------------------------------- | ----------------------------------------------------------- |
-| `secret`    | `CoerceToUint8ArrayInput`               | Symmetric secret key.                                       |
-| `publicKey` | `crypto.RsaPublicKey \| crypto.KeyLike` | RSA public key used to encrypt the generated symmetric key. |
-| `options`   | `Cph.Stream.Hybrid.EncryptOptions`      | Stream encryption options.                                  |
-
-</details>
-
----
-
-<details>
-
-<summary>Returns</summary>
-
-Type: `Cph.Stream.Hybrid.EncryptReturnType`
-
-- An object containing:
-  - a new instance of `cipher` allowing you to add listeners to the `cipher` encryption process.
-  - the actual `encrypt` callback that must be called and awaited to start the encryption process.
+The encrypted result Buffer.
 
 </details>
 
 ---
 
 - See [`CoerceToUint8ArrayInput`](#coercetouint8arrayinput) for more informations about supported input data types.
-- See [`Cph.Stream.Hybrid.EncryptOptions`](#cphstreamhybridStreamEncryptoptions) for more informations about encryption options.
-- See [In-memory data stream with hybrid encryption/decryption](#in-memory-data-stream-with-hybrid-encryptiondecryption) examples.
-- See [File based data stream with hybrid encryption/decryption](#file-based-data-stream-with-hybrid-encryptiondecryption) examples.
+- See [`Cph.PrivateKey`](#cphprivatekey) for accepted formats.
+- See [`Cph.Options`](#cphoptionst) for more informations about additional decryption options.
+- See FIXME: add example link
 
 ---
 
-##### `Cipher.hybridStreamDecrypt()`
+##### `Cipher.stream.Encrypt()`
 
-Decrypts a stream using hybrid decryption (symmetric + RSA).
+Encrypt stream data.
 
 <details>
 
 <summary>Parameters</summary>
 
-| Name         | Type                                     | Description                                                      |
-| ------------ | ---------------------------------------- | ---------------------------------------------------------------- |
-| `privateKey` | `crypto.RsaPrivateKey \| crypto.KeyLike` | RSA private key for used to decrpyt the encrypted symmetric key. |
-| `options`    | `Cph.Stream.Hybrid.DecryptOptions`       | Stream decryption options.                                       |
+| Name                | Type                        | Default       | Description                                              |
+| ------------------- | --------------------------- | ------------- | -------------------------------------------------------- |
+| `secret`            | `CoerceToUint8ArrayInput`   | -             | The secret key used to encrypt the data.                 |
+| `options`           | `Cph.Stream.EncryptOptions` | -             | An object defining required options.                     |
+| `options.input`     | `Readable`                  | -             | The `Readable` Stream where raw data to encrypt is read. |
+| `options.output`    | `Writable`                  | -             | The `Writable` Stream where encrypted data is written.   |
+| `options.algorithm` | `Cph.CBCTypes`              | `aes-256-cbc` | One of the Cipher Block Chaining algorithm.              |
+
+</details>
+
+---
+
+<details>
+
+<summary style="cursor:pointer">Returns</summary>
+
+Type: `Promise<void>`
+
+A new Promise that resolves `void` once stream encryption is completed.
+
+</details>
+
+---
+
+##### `Cipher.stream.Decrypt()`
+
+Decrypt stream data.
+
+<details>
+
+<summary>Parameters</summary>
+
+| Name                | Type                        | Default       | Description                                            |
+| ------------------- | --------------------------- | ------------- | ------------------------------------------------------ |
+| `secret`            | `CoerceToUint8ArrayInput`   | -             | The secret key used to decrypt the data.               |
+| `options`           | `Cph.Stream.DecryptOptions` | -             | An object defining required options.                   |
+| `options.input`     | `Readable`                  | -             | The `Readable` Stream where encrypted data is read.    |
+| `options.output`    | `Writable`                  | -             | The `Writable` Stream where decrypted data is written. |
+| `options.algorithm` | `Cph.CBCTypes`              | `aes-256-cbc` | One of the Cipher Block Chaining algorithm.            |
+
+</details>
+
+---
+
+<details>
+
+<summary style="cursor:pointer">Returns</summary>
+
+Type: `Promise<void>`
+
+A new Promise that resolves `void` once stream decryption is completed.
+
+</details>
+
+---
+
+##### `Cipher.stream.HybridEncrypt()`
+
+Encrypt stream data using hybrid encryption.
+
+<details>
+
+<summary style="cursor:pointer">Parameters</summary>
+
+| Parameter           | Type                        | Default       | Description                                              |
+| ------------------- | --------------------------- | ------------- | -------------------------------------------------------- |
+| `key`               | `crypto.KeyLike`            | -             | The RSA Public Key.                                      |
+| `options`           | `Cph.Stream.EncryptOptions` | -             | An object defining required options.                     |
+| `options.input`     | `Readable`                  | -             | The `Readable` Stream where raw data to encrypt is read. |
+| `options.output`    | `Writable`                  | -             | The `Writable` Stream where encrypted data is written.   |
+| `options.algorithm` | `Cph.CBCTypes`              | `aes-256-cbc` | One of the Cipher Block Chaining algorithm.              |
 
 </details>
 
@@ -420,19 +475,53 @@ Decrypts a stream using hybrid decryption (symmetric + RSA).
 
 <summary>Returns</summary>
 
-Type: `Promise<Cph.Stream.Hybrid.DecryptReturnType>`
+Type: `Promise<void>`
 
-- A new Promise that resolves when Key IV extraction completes returning an object containing:
-  - a new instance of `crypto.Decipheriv` allowing you to add listeners to the `decipher` decryption process.
-  - the actual `decrypt` callback that must be called and awaited in order to start the decryption process.
+A new Promise that resolves `void` once stream encryption is completed.
 
 </details>
 
 ---
 
-- See [`Cph.Stream.Hybrid.DecryptOptions`](#cphstreamhybridStreamDecryptoptions) for more informations about decryption options.
-- See [In-memory data stream with hybrid encryption/decryption](#in-memory-data-stream-with-hybrid-encryptiondecryption) examples.
-- See [File based data stream with hybrid encryption/decryption](#file-based-data-stream-with-hybrid-encryptiondecryption) examples.
+- See FIXME: add example link
+
+---
+
+##### `Cipher.stream.HybridDecrypt()`
+
+Decrypt stream data using hybrid decryption.
+
+<details>
+
+<summary style="cursor:pointer">Parameters</summary>
+
+| Parameter           | Type                        | Default       | Description                                            |
+| ------------------- | --------------------------- | ------------- | ------------------------------------------------------ |
+| `key`               | `Cph.PrivateKey`            | -             | The RSA Private Key.                                   |
+| `options`           | `Cph.Stream.DecryptOptions` | -             | An object defining required options.                   |
+| `options.input`     | `Readable`                  | -             | The `Readable` Stream where encrypted data is read.    |
+| `options.output`    | `Writable`                  | -             | The `Writable` Stream where decrypted data is written. |
+| `options.algorithm` | `Cph.CBCTypes`              | `aes-256-cbc` | One of the Cipher Block Chaining algorithm.            |
+
+</details>
+
+---
+
+<details>
+
+<summary>Returns</summary>
+
+Type: `Promise<void>`
+
+A new Promise that resolves `void` once stream encryption is completed.
+
+</details>
+
+---
+
+- See [`CoerceToUint8ArrayInput`](#coercetouint8arrayinput) for more informations about supported input data types.
+- See [`Cph.PrivateKey`](#cphprivatekey) for accepted formats.
+- See FIXME: add example link
 
 ---
 
@@ -448,13 +537,13 @@ This module supports different input data types and it uses the [`coerceToUint8A
 
 ##### `Cph.CBCTypes`
 
-Cipher CBC algorithm types.
+AES Cipher Block Chaining algorithms.
 
 ---
 
 ##### `Cph.AesAlgorithm`
 
-Supported AES algorithm types.
+All supported AES algorithms.
 
 ---
 
@@ -491,128 +580,45 @@ Common options in encryption/decryption processes.
 
 ---
 
-##### `Cph.Stream.Symmetric.EncryptOptions`
+##### `Cph.Stream.EncryptOptions`
 
 Stream symmetric encryption options.
 
-- Extends [`Cph.Options<Cph.CBCTypes>`](#cphoptionst).
-
 <details>
 
 <summary>Properties</summary>
 
-| Property | Type       | Description                                                   |
-| -------- | ---------- | ------------------------------------------------------------- |
-| `input`  | `Readable` | The `Readable` Stream from where raw data to encrypt is read. |
-| `output` | `Writable` | The `Writable` Stream where encrypted data is written.        |
+| Property    | Type           | Description                                                   |
+| ----------- | -------------- | ------------------------------------------------------------- |
+| `input`     | `Readable`     | The `Readable` Stream from where raw data to encrypt is read. |
+| `output`    | `Writable`     | The `Writable` Stream where encrypted data is written.        |
+| `algorithm` | `Cph.CBCTypes` | One of the Cipher Block Chaining algorithm.                   |
 
 </details>
 
 ---
 
-##### `Cph.Stream.Symmetric.EncryptReturnType`
-
-Returnign object from `Cipher.streamEncrypt()` method.
-
-<details>
-
-<summary>Properties</summary>
-
-| Property  | Type                  | Description                                                                                             |
-| --------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
-| `cipher`  | `crypto.Cipheriv`     | The `crypto.Cipheriv` instance.                                                                         |
-| `encrypt` | `() => Promise<void>` | The actual `encrypt` callback that must be called and awaited in order to start the encryption process. |
-
-</details>
-
----
-
-##### `Cph.Stream.Symmetric.DecryptOptions`
+##### `Cph.Stream.DecryptOptions`
 
 Stream symmetric decryption options.
 
-- Extends [`Cph.Stream.Symmetric.EncryptOptions`](#cphstreamsymmetricencryptoptions).
+- Alias of [`Cph.Stream.EncryptOptions`](#cphstreamencryptoptions).
 
 <details>
 
 <summary>Properties</summary>
 
-| Property | Type       | Description                                              |
-| -------- | ---------- | -------------------------------------------------------- |
-| `input`  | `Readable` | The `Readable` Stream from where encrypted data is read. |
-| `output` | `Writable` | The `Writable` Stream where decrypted data is written.   |
+| Property    | Type           | Description                                              |
+| ----------- | -------------- | -------------------------------------------------------- |
+| `input`     | `Readable`     | The `Readable` Stream from where encrypted data is read. |
+| `output`    | `Writable`     | The `Writable` Stream where decrypted data is written.   |
+| `algorithm` | `Cph.CBCTypes` | One of the Cipher Block Chaining algorithm.              |
 
 </details>
-
----
-
-##### `Cph.Stream.Symmetric.DecryptReturnType`
-
-Returnign object from awaited `Cipher.streamDecrypt()` method.
-
-<details>
-
-<summary>Properties</summary>
-
-| Property   | Type                  | Description                                                                                             |
-| ---------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
-| `decipher` | `crypto.Decipheriv`   | The `crypto.Decipheriv` instance.                                                                       |
-| `decrypt`  | `() => Promise<void>` | The actual `decrypt` callback that must be called and awaited in order to start the decryption process. |
-
-</details>
-
----
-
-##### `Cph.Stream.Hybrid.EncryptOptions`
-
-Stream hybrid encryption options.
-
-- Alias for [`Cph.Stream.Symmetric.EncryptOptions`](#cphstreamsymmetricencryptoptions)
-
----
-
-##### `Cph.Stream.Hybrid.EncryptReturnType`
-
-Returnign object from `Cipher.hybridStreamEncrypt()` method.
-
-- Alias for [`Cph.Stream.Symmetric.EncryptReturnType`](#cphstreamsymmetricencryptreturntype)
-
----
-
-##### `Cph.Stream.Hybrid.DecryptOptions`
-
-Stream hybrid decryption options.
-
-- Extends [`Cph.Stream.Symmetric.DecryptOptions`](#cphstreamsymmetricdecryptoptions).
-
-<details>
-
-<summary>Properties</summary>
-
-| Property       | Type     | Description                                                                                                                                                          |
-| -------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `rsaKeyLength` | `number` | The RSA key length in bytes used while encrypting data. This is used to properly extract the encrypted Cipher Key and Initialization Vector from the encrypted data. |
-
-</details>
-
----
-
-##### `Cph.Stream.Hybrid.DecryptReturnType`
-
-Returnign object from awaited `Cipher.hybridStreamDecrypt()` method.
-
-- Alias for [`Cph.Stream.Symmetric.DecryptReturnType`](#cphstreamsymmetricdecryptreturntype)
 
 ---
 
 ### Examples
-
-#### Importing the library
-
-```ts
-import { Cipher } from "@alessiofrittoli/crypto-cipher";
-import type { Cph as CipherTypes } from "@alessiofrittoli/crypto-cipher/types";
-```
 
 #### In-memory data buffer encryption/decryption
 
@@ -623,11 +629,52 @@ The simpliest way to encrypt/decrypt in-memory data buffers.
 const data = "my top-secret data";
 const password = "my-very-strong-password";
 
-const encrypted = Cipher.encrypt(data, password);
+const encrypted = Cipher.Encrypt(data, password);
 
 // decrypt
-const decrypted = Cipher.decrypt(encrypted, password);
+const decrypted = Cipher.Decrypt(encrypted, password);
 console.log(decrypted); // Outputs: my top-secret data
+```
+
+---
+
+#### In-memory data buffer hybrid encryption/decryption
+
+> [!WARNING]
+> Please, note that when using hybrid encryption/decryption algorithms:
+>
+> - an RSA keypair is required.
+> - if a passphrase is set for the Private Key, please make sure to use one of the Cipher Block Chaining algorithm or `chacha20-poly1305` algorithm:
+>   - aes-128-cbc (`type` can be `pkcs1` or `pkcs8`)
+>   - aes-192-cbc (`type` can be `pkcs1` or `pkcs8`)
+>   - aes-256-cbc (`type` can be `pkcs1` or `pkcs8`)
+>   - chacha20-poly1305 (`type` can only be `pkcs1`)
+
+```ts
+import { Cipher } from "@alessiofrittoli/crypto-cipher";
+
+const passphrase = "custompassphrase";
+
+const keyPair = crypto.generateKeyPairSync("rsa", {
+  modulusLength: 512 * 8, // 4096 bits
+  publicKeyEncoding: { type: "spki", format: "pem" },
+  privateKeyEncoding: {
+    type: "pkcs1",
+    format: "pem",
+    passphrase,
+    cipher: Cipher.ALGORITHM.CHACHA_20_POLY,
+  },
+});
+
+// encrypt
+const data = "my top-secret data";
+const encrypted = Cipher.HybridEncrypt(data, keypair.publicKey);
+
+// decrypt
+const decrypted = Cipher.HybridDecrypt(encrypted, {
+  key: keypair.privateKey,
+  passphrase,
+});
 ```
 
 ---
@@ -642,38 +689,40 @@ The in-memory data stream comes pretty handy when, for example, we need to strea
 // /api/stream-encrypt
 
 import { Readable, Writable } from "stream";
+import { Stream } from "@alessiofrittoli/stream-writer";
 
 const routeHandler = () => {
-  const data = "my top-secret data";
   const password = "my-very-strong-password";
-  const stream = new TransformStream();
-  const writer = stream.writable.getWriter();
+  const stream = new Stream();
+  const headers = new Headers(stream.headers);
 
-  // Create a `Readable` Stream with raw data.
-  const input = new Readable({
-    read() {
-      this.push(data);
-      this.push(null); // Signal end of stream
-    },
-  });
+  const input = Readable.from([
+    Buffer.from("Chunk n.1"),
+    Buffer.from("Chunk n.2"),
+    Buffer.from("Chunk n.3"),
+    Buffer.from("Chunk n.4"),
+  ]);
 
   // `Writable` Stream where encrypted data is written
   const output = new Writable({
-    write(chunk, encoding, callback) {
-      writer.write(chunk);
+    async write(chunk, encoding, callback) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await stream.write(chunk);
       callback();
     },
-    final(callback) {
-      writer.close();
+    async final(callback) {
+      await stream.close();
       callback();
     },
   });
 
-  Cipher.streamEncrypt(password, { input, output }).encrypt();
+  Cipher.stream.Encrypt(password, { input, output }).catch(async () => {
+    await stream.close();
+  });
 
   return (
     // encrypted stream
-    new Response(stream.readable)
+    new Response(stream.readable, { headers })
   );
 };
 ```

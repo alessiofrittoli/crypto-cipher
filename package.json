@@ -1,6 +1,6 @@
 {
 	"name": "@alessiofrittoli/crypto-cipher",
-	"version": "3.0.0-alpha.4",
+	"version": "3.0.0",
 	"description": "Node.js Cipher cryptograph utility library",
 	"author": {
 		"name": "Alessio Frittoli",
@@ -19,9 +19,14 @@
 		"cryptography",
 		"cipher",
 		"aes",
+		"aead",
 		"hybrid-encryption",
 		"stream-encrypt",
-		"stream-decrypt"
+		"stream-decrypt",
+		"ccm",
+		"gcm",
+		"ocb",
+		"cbc"
 	],
 	"homepage": "https://github.com/alessiofrittoli/crypto-cipher#readme",
 	"bugs": {
@@ -113,6 +118,6 @@
 	"dependencies": {
 		"@alessiofrittoli/crypto-buffer": "^3.10.0",
 		"@alessiofrittoli/math-utils": "^1.17.0",
-		"@alessiofrittoli/stream-reader": "2.7.0-alpha.3"
+		"@alessiofrittoli/stream-reader": "3.0.0"
 	}
 }

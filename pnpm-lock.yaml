@@ -15,8 +15,8 @@ importers:
         specifier: ^1.17.0
         version: 1.17.0
       '@alessiofrittoli/stream-reader':
-        specifier: 2.7.0-alpha.3
-        version: 2.7.0-alpha.3
+        specifier: 3.0.0
+        version: 3.0.0
     devDependencies:
       '@alessiofrittoli/node-scripts':
         specifier: ^3.3.0
@@ -99,8 +99,8 @@ packages:
   '@alessiofrittoli/node-scripts@3.3.0':
     resolution: {integrity: sha512-09LXPw+qF0DIlSeqAtn06VaMLYpRZrgdG09JRRaSYjUhNszOv3zesROQvwlIlwrBRjRd2r37R/yu/4FflcwgCA==}
 
-  '@alessiofrittoli/stream-reader@2.7.0-alpha.3':
-    resolution: {integrity: sha512-4OTbSTvGdol1aZZmGMazPwCYroYoTUJtK4LD6BgjEkHVOQK5EbDpj3kRaE2YwNL5BBB5iZkbIDJeJ7mq70lq2g==}
+  '@alessiofrittoli/stream-reader@3.0.0':
+    resolution: {integrity: sha512-LmLXfczGhuFjKfI/o0Z0UK+rWQQYJB1xtiZwIMtY0PzUB9B7rjSVYto2u9jkfE5JpGLG6Yr3xFCCSLMwdys+wQ==}
 
   '@alessiofrittoli/type-utils@1.9.0':
     resolution: {integrity: sha512-YtbIEvMc3i8KrY22a84WJXa+qWEyr0POpVsNhWIZMU3c23BX1AHcrdFTdYac5h3apdhu/uRrSUDjOkGO/Vie0Q==}
@@ -2546,7 +2546,7 @@ snapshots:
       '@alessiofrittoli/event-emitter': 1.6.0
       '@alessiofrittoli/exception': 3.5.0
 
-  '@alessiofrittoli/stream-reader@2.7.0-alpha.3':
+  '@alessiofrittoli/stream-reader@3.0.0':
     dependencies:
       '@alessiofrittoli/event-emitter': 1.6.0
       '@alessiofrittoli/exception': 3.5.0

@@ -69,6 +69,7 @@ export namespace Cph
 	}
 
 
+	/** The RSA Private Key. */
 	export type PrivateKey = KeyLike | { key: KeyLike, passphrase?: string }
 	
 	export namespace Stream

@@ -276,7 +276,7 @@ export class Cipher
 	/**
 	 * Decrypt in-memory data using hybrid decryption.
 	 * 
-	 * ⚠️ This is not suitable for large data. Use {@link Cipher.stream.HybridDecrypt()} method for large data encryption.
+	 * ⚠️ This is not suitable for large data decryption. Use {@link Cipher.stream.HybridDecrypt()} method for large data decryption.
 	 * 
 	 * @param	data	The encrypted data to decrypt.
 	 * @param	key		The RSA Private Key.

@@ -64,16 +64,8 @@ describe( 'Cipher - In-Memory Stream Hybrid Encryption/Decryption', () => {
 
 		it( 'decrypts an in-memory buffer stream', async () => {
 
-			const encryptedResult = Buffer.concat( encryptedChunks )
-		
 			// Create a `Readable` Stream with encrypted data.
-			const input = new Readable( {
-				read()
-				{
-					this.push( encryptedResult ) // Push data to decrypt
-					this.push( null ) // Signal end of stream
-				},
-			} )
+			const input = Readable.from( encryptedChunks )
 		
 			const chunks: Buffer[] = []
 		

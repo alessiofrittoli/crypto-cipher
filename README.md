@@ -1,18 +1,44 @@
-# Crypto Cipher 🔐
+<h1 align="center">Crypto Cipher 🔐</h1>
+<p align="center">
+  Node.js Cipher cryptograph utility library
+</p>
+<p align="center">
+  <a href="https://npmjs.org/package/@alessiofrittoli/crypto-cipher">
+    <img src="https://img.shields.io/npm/v/@alessiofrittoli/crypto-cipher" alt="Latest version"/>
+  </a>
+  <a href="https://coveralls.io/github/alessiofrittoli/crypto-cipher">
+    <img src="https://coveralls.io/repos/github/alessiofrittoli/crypto-cipher/badge.svg" alt="Test coverage"/>
+  </a>
+  <a href="https://socket.dev/npm/package/@alessiofrittoli/crypto-cipher/overview">
+    <img src="https://socket.dev/api/badge/npm/package/@alessiofrittoli/crypto-cipher" alt="Socket Security score"/>
+  </a>
+  <a href="https://npmjs.org/package/@alessiofrittoli/crypto-cipher">
+    <img src="https://img.shields.io/npm/dm/@alessiofrittoli/crypto-cipher.svg" alt="npm downloads"/>
+  </a>
+  <a href="https://bundlephobia.com/package/@alessiofrittoli/crypto-cipher">
+    <img src="https://badgen.net/bundlephobia/dependency-count/@alessiofrittoli/crypto-cipher" alt="Dependencies"/>
+  </a>
+  <a href="https://libraries.io/npm/%40alessiofrittoli%2Fcrypto-cipher">
+    <img src="https://img.shields.io/librariesio/release/npm/@alessiofrittoli/crypto-cipher" alt="Dependencies status"/>
+  </a>
+</p>
+<p align="center">
+  <a href="https://bundlephobia.com/package/@alessiofrittoli/crypto-cipher">
+    <img src="https://badgen.net/bundlephobia/min/@alessiofrittoli/crypto-cipher" alt="minified"/>
+  </a>
+  <a href="https://bundlephobia.com/package/@alessiofrittoli/crypto-cipher">
+    <img src="https://badgen.net/bundlephobia/minzip/@alessiofrittoli/crypto-cipher" alt="minizipped"/>
+  </a>
+  <a href="https://bundlephobia.com/package/@alessiofrittoli/crypto-cipher">
+    <img src="https://badgen.net/bundlephobia/tree-shaking/@alessiofrittoli/crypto-cipher" alt="Tree shakable"/>
+  </a>
+</p>
+<p align="center">
+  <a href="https://github.com/sponsors/alessiofrittoli">
+    <img src="https://img.shields.io/static/v1?label=Fund%20this%20package&message=%E2%9D%A4&logo=GitHub&color=%23DB61A2" alt="Fund this package"/>
+  </a>
+</p>
 
-[![NPM Latest Version][version-badge]][npm-url] [![Coverage Status][coverage-badge]][coverage-url] [![Socket Status][socket-badge]][socket-url] [![NPM Monthly Downloads][downloads-badge]][npm-url] [![Dependencies][deps-badge]][deps-url]
-
-[![GitHub Sponsor][sponsor-badge]][sponsor-url]
-
-[version-badge]: https://img.shields.io/npm/v/%40alessiofrittoli%2Fcrypto-cipher
-[npm-url]: https://npmjs.org/package/%40alessiofrittoli%2Fcrypto-cipher
-[coverage-badge]: https://coveralls.io/repos/github/alessiofrittoli/crypto-cipher/badge.svg
-[coverage-url]: https://coveralls.io/github/alessiofrittoli/crypto-cipher
-[socket-badge]: https://socket.dev/api/badge/npm/package/@alessiofrittoli/crypto-cipher
-[socket-url]: https://socket.dev/npm/package/@alessiofrittoli/crypto-cipher/overview
-[downloads-badge]: https://img.shields.io/npm/dm/%40alessiofrittoli%2Fcrypto-cipher.svg
-[deps-badge]: https://img.shields.io/librariesio/release/npm/%40alessiofrittoli%2Fcrypto-cipher
-[deps-url]: https://libraries.io/npm/%40alessiofrittoli%2Fcrypto-cipher
 [sponsor-badge]: https://img.shields.io/static/v1?label=Fund%20this%20package&message=%E2%9D%A4&logo=GitHub&color=%23DB61A2
 [sponsor-url]: https://github.com/sponsors/alessiofrittoli
 
@@ -165,7 +191,7 @@ const { encrypt } = Cipher.hybridEncrypt(
     padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
     oaepHash: "SHA-256",
   },
-  { input, output }
+  { input, output },
 );
 await encrypt();
 ```
@@ -190,7 +216,7 @@ const { decrypt } = await Cipher.hybridDecrypt(
     padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
     oaepHash: "SHA-256",
   },
-  { input, output, rsaKeyLength }
+  { input, output, rsaKeyLength },
 );
 
 await decrypt();
@@ -201,7 +227,7 @@ await decrypt();
 ```ts
 await Cipher.stream.HybridDecrypt(
   { key: keyPair.privateKey, passphrase },
-  { input, output }
+  { input, output },
 );
 ```
 
@@ -1063,7 +1089,7 @@ await Cipher.stream.HybridDecrypt(
     key: keyPair.privateKey,
     passphrase, // optional passhrase (required if set while generating keypair).
   },
-  { input, output }
+  { input, output },
 );
 
 console.log(Buffer.concat(chunks).toString()); // Outputs: 'my top-secret data'
@@ -1103,7 +1129,7 @@ const password = "my-very-strong-password";
 const input = fs.createReadStream("my-very-large-top-secret-file.encrypted");
 // output where decrypted data is written
 const output = fs.createWriteStream(
-  "my-very-large-top-secret-file-decrypted.pdf"
+  "my-very-large-top-secret-file-decrypted.pdf",
 );
 // decrypt
 await Cipher.stream.Decrypt(password, { input, output });
@@ -1175,7 +1201,7 @@ import fs from "fs";
 const input = fs.createReadStream("my-very-large-top-secret-file.encrypted");
 // output where decrypted data is written
 const output = fs.createWriteStream(
-  "my-very-large-top-secret-file-decrypted.pdf"
+  "my-very-large-top-secret-file-decrypted.pdf",
 );
 // decrypt
 const { decrypt } = await Cipher.stream.HybridDecrypt(
@@ -1183,7 +1209,7 @@ const { decrypt } = await Cipher.stream.HybridDecrypt(
     key: keyPair.privateKey,
     passphrase, // optional passhrase (required if set while generating keypair).
   },
-  { input, output }
+  { input, output },
 );
 ```
 

@@ -50,11 +50,9 @@ describe('Cipher.Decrypt()', () => {
 		expect(Cipher.Decrypt(encrypted, secret).toString()).toBe(dataToEncrypt)
 	})
 
-	Cipher.ALGORITHMS.map(algorithm => {
-		it(`decrypts data with '${algorithm}' algorithm`, () => {
-			const encrypted = Cipher.Encrypt(dataToEncrypt, secret, { algorithm })
-			expect(Cipher.Decrypt(encrypted, secret, { algorithm }).toString()).toBe(dataToEncrypt)
-		})
+	it.each(Cipher.ALGORITHMS)('decrypts data with $0 algorithm', algorithm => {
+		const encrypted = Cipher.Encrypt(dataToEncrypt, secret, { algorithm })
+		expect(Cipher.Decrypt(encrypted, secret, { algorithm }).toString()).toBe(dataToEncrypt)
 	})
 
 	it('decrypts data with custom Additional Authenticated Data', () => {

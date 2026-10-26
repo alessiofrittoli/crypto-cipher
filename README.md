@@ -70,10 +70,12 @@
   - [File based data stream encryption/decryption](#file-based-data-stream-encryptiondecryption)
   - [File based data stream with hybrid encryption/decryption](#file-based-data-stream-with-hybrid-encryptiondecryption)
 - [Development](#development)
-  - [ESLint](#eslint)
-  - [Jest](#jest)
-- [Contributing](#contributing)
-- [Security](#security)
+  - [Local development](#local-development)
+  - [Production build](#production-build)
+  - [Unit tests](#unit-tests)
+    - [Run tests with coverage](#run-tests-with-coverage)
+  - [Contributing](#contributing)
+  - [Security](#security)
 - [Credits](#made-with-)
 
 ---
@@ -150,13 +152,13 @@ Is now renamed to **`Cipher.Decrypt()`**. It's API implementation remain the sam
 **Before**
 
 ```ts
-await Cipher.streamEncrypt(password, { input, output }).encrypt();
+await Cipher.streamEncrypt(password, { input, output }).encrypt()
 ```
 
 **Now**
 
 ```ts
-await Cipher.stream.Encrypt(password, { input, output });
+await Cipher.stream.Encrypt(password, { input, output })
 ```
 
 ---
@@ -166,15 +168,15 @@ await Cipher.stream.Encrypt(password, { input, output });
 **Before**
 
 ```ts
-const { decrypt } = await Cipher.streamDecrypt(password, { input, output });
+const { decrypt } = await Cipher.streamDecrypt(password, { input, output })
 
-await decrypt();
+await decrypt()
 ```
 
 **Now**
 
 ```ts
-await Cipher.stream.Decrypt(password, { input, output });
+await Cipher.stream.Decrypt(password, { input, output })
 ```
 
 ---
@@ -189,17 +191,17 @@ const { encrypt } = Cipher.hybridEncrypt(
   {
     key: keyPair.publicKey,
     padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-    oaepHash: "SHA-256",
+    oaepHash: 'SHA-256',
   },
   { input, output },
-);
-await encrypt();
+)
+await encrypt()
 ```
 
 **Now**
 
 ```ts
-await Cipher.stream.HybridEncrypt(keyPair.publicKey, { input, output });
+await Cipher.stream.HybridEncrypt(keyPair.publicKey, { input, output })
 ```
 
 ---
@@ -214,32 +216,37 @@ const { decrypt } = await Cipher.hybridDecrypt(
     key: keyPair.privateKey,
     passphrase: passphrase,
     padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-    oaepHash: "SHA-256",
+    oaepHash: 'SHA-256',
   },
   { input, output, rsaKeyLength },
-);
+)
 
-await decrypt();
+await decrypt()
 ```
 
 **Now**
 
 ```ts
-await Cipher.stream.HybridDecrypt(
-  { key: keyPair.privateKey, passphrase },
-  { input, output },
-);
+await Cipher.stream.HybridDecrypt({ key: keyPair.privateKey, passphrase }, { input, output })
 ```
 
 **Or even**
 
 ```ts
-await Cipher.stream.HybridDecrypt(keyPair.privateKey, { input, output });
+await Cipher.stream.HybridDecrypt(keyPair.privateKey, { input, output })
 ```
 
 ---
 
 ### API Reference
+
+> [!WARNING]
+>
+> Requires the following packages to be installed:
+>
+> - [`@alessiofrittoli/crypto-buffer`](https://npmjs.com/package/@alessiofrittoli/crypto-buffer)
+> - [`@alessiofrittoli/stream-reader`](https://npmjs.com/package/@alessiofrittoli/stream-reader)
+> - [`@alessiofrittoli/math-utils`](https://npmjs.com/package/@alessiofrittoli/math-utils)
 
 #### Constants
 
@@ -821,14 +828,14 @@ The simpliest way to encrypt/decrypt in-memory data buffers.
 
 ```ts
 // encrypt
-const data = "my top-secret data";
-const password = "my-very-strong-password";
+const data = 'my top-secret data'
+const password = 'my-very-strong-password'
 
-const encrypted = Cipher.Encrypt(data, password);
+const encrypted = Cipher.Encrypt(data, password)
 
 // decrypt
-const decrypted = Cipher.Decrypt(encrypted, password);
-console.log(decrypted); // Outputs: my top-secret data
+const decrypted = Cipher.Decrypt(encrypted, password)
+console.log(decrypted) // Outputs: my top-secret data
 ```
 
 ---
@@ -850,41 +857,41 @@ Hybrid encryption offers an higher level of security since only the RSA Private 
 ##### Keypair
 
 ```ts
-import { Cipher } from "@alessiofrittoli/crypto-cipher";
+import { Cipher } from '@alessiofrittoli/crypto-cipher'
 
-const keyPair = crypto.generateKeyPairSync("rsa", {
+const keyPair = crypto.generateKeyPairSync('rsa', {
   modulusLength: 512 * 8, // 4096 bits
-  publicKeyEncoding: { type: "spki", format: "pem" },
-  privateKeyEncoding: { type: "pkcs1", format: "pem" },
-});
+  publicKeyEncoding: { type: 'spki', format: 'pem' },
+  privateKeyEncoding: { type: 'pkcs1', format: 'pem' },
+})
 
 // or you can optionally set a custom passphrase
-const passphrase = "custompassphrase";
+const passphrase = 'custompassphrase'
 
-const keyPair = crypto.generateKeyPairSync("rsa", {
+const keyPair = crypto.generateKeyPairSync('rsa', {
   modulusLength: 512 * 8, // 4096 bits
-  publicKeyEncoding: { type: "spki", format: "pem" },
+  publicKeyEncoding: { type: 'spki', format: 'pem' },
   privateKeyEncoding: {
-    type: "pkcs1",
-    format: "pem",
+    type: 'pkcs1',
+    format: 'pem',
     passphrase,
     cipher: Cipher.ALGORITHM.CHACHA_20_POLY,
   },
-});
+})
 ```
 
 ```ts
-import { Cipher } from "@alessiofrittoli/crypto-cipher";
+import { Cipher } from '@alessiofrittoli/crypto-cipher'
 
 // encrypt
-const data = "my top-secret data";
-const encrypted = Cipher.HybridEncrypt(data, keypair.publicKey);
+const data = 'my top-secret data'
+const encrypted = Cipher.HybridEncrypt(data, keypair.publicKey)
 
 // decrypt
 const decrypted = Cipher.HybridDecrypt(encrypted, {
   key: keypair.privateKey,
   passphrase,
-});
+})
 ```
 
 ---
@@ -898,43 +905,43 @@ The in-memory data stream comes pretty handy when, for example, we need to strea
 ```ts
 // /api/stream-encrypt
 
-import { Readable, Writable } from "stream";
-import { Stream } from "@alessiofrittoli/stream-writer";
+import { Stream } from '@alessiofrittoli/stream-writer'
+import { Readable, Writable } from 'stream'
 
 const routeHandler = () => {
-  const password = "my-very-strong-password";
-  const stream = new Stream();
-  const headers = new Headers(stream.headers);
+  const password = 'my-very-strong-password'
+  const stream = new Stream()
+  const headers = new Headers(stream.headers)
 
   const input = Readable.from([
-    Buffer.from("Chunk n.1"),
-    Buffer.from("Chunk n.2"),
-    Buffer.from("Chunk n.3"),
-    Buffer.from("Chunk n.4"),
-  ]);
+    Buffer.from('Chunk n.1'),
+    Buffer.from('Chunk n.2'),
+    Buffer.from('Chunk n.3'),
+    Buffer.from('Chunk n.4'),
+  ])
 
   // `Writable` Stream where encrypted data is written
   const output = new Writable({
     async write(chunk, encoding, callback) {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      await stream.write(chunk);
-      callback();
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      await stream.write(chunk)
+      callback()
     },
     async final(callback) {
-      await stream.close();
-      callback();
+      await stream.close()
+      callback()
     },
-  });
+  })
 
   Cipher.stream.Encrypt(password, { input, output }).catch(async () => {
-    await stream.close();
-  });
+    await stream.close()
+  })
 
   return (
     // encrypted stream
     new Response(stream.readable, { headers })
-  );
-};
+  )
+}
 ```
 
 ##### Decrypting received stream
@@ -942,59 +949,59 @@ const routeHandler = () => {
 ```ts
 // /api/stream-decrypt
 
-import { Transform, Writable } from "stream";
-import { Cipher } from "@alessiofrittoli/crypto-cipher";
-import { StreamReader } from "@alessiofrittoli/stream-reader";
+import { StreamReader } from '@alessiofrittoli/stream-reader'
+import { Cipher } from '@alessiofrittoli/crypto-cipher'
+import { Transform, Writable } from 'stream'
 
-const password = "my-very-strong-password";
+const password = 'my-very-strong-password'
 
 const routeHandler = () =>
-  fetch("/api/stream-encrypt").then((response) => {
+  fetch('/api/stream-encrypt').then(response => {
     if (!response.body) {
-      return new Respone(null, { status: 400 });
+      return new Respone(null, { status: 400 })
     }
 
     // web stream where decrypted data is written
     const stream = new Stream<Buffer, string>({
       transform(chunk, controller) {
-        controller.enqueue(chunk.toString());
+        controller.enqueue(chunk.toString())
       },
-    });
-    const headers = new Headers(stream.headers);
+    })
+    const headers = new Headers(stream.headers)
 
-    headers.set("Content-Type", "text/html");
+    headers.set('Content-Type', 'text/html')
 
     const reader = new StreamReader<Uint8Array, Buffer, false>(response.body, {
       inMemory: false,
       transform: Buffer.from,
-    });
+    })
 
-    const input = new Transform();
+    const input = new Transform()
 
-    reader.on("data", (chunk) => input.push(chunk));
-    reader.on("close", () => input.end());
+    reader.on('data', chunk => input.push(chunk))
+    reader.on('close', () => input.end())
 
-    reader.read();
+    reader.read()
 
     // `Writable` Stream where encrypted data is written
     const output = new Writable({
       async write(chunk: Buffer, encoding, callback) {
-        await stream.write(chunk);
-        callback();
+        await stream.write(chunk)
+        callback()
       },
       final(callback) {
-        stream.close();
-        callback();
+        stream.close()
+        callback()
       },
-    });
+    })
 
-    Cipher.stream.Decrypt(password, { input, output }).catch(async (error) => {
-      console.error(error);
-      await stream.close();
-    });
+    Cipher.stream.Decrypt(password, { input, output }).catch(async error => {
+      console.error(error)
+      await stream.close()
+    })
 
-    return new Response(stream.readable, { headers });
-  });
+    return new Response(stream.readable, { headers })
+  })
 ```
 
 ---
@@ -1016,54 +1023,54 @@ Hybrid encryption offers an higher level of security since only the RSA Private 
 ##### Keypair
 
 ```ts
-import { Cipher } from "@alessiofrittoli/crypto-cipher";
+import { Cipher } from '@alessiofrittoli/crypto-cipher'
 
-const keyPair = crypto.generateKeyPairSync("rsa", {
+const keyPair = crypto.generateKeyPairSync('rsa', {
   modulusLength: 512 * 8, // 4096 bits
-  publicKeyEncoding: { type: "spki", format: "pem" },
-  privateKeyEncoding: { type: "pkcs1", format: "pem" },
-});
+  publicKeyEncoding: { type: 'spki', format: 'pem' },
+  privateKeyEncoding: { type: 'pkcs1', format: 'pem' },
+})
 
 // or you can optionally set a custom passphrase
-const passphrase = "custompassphrase";
+const passphrase = 'custompassphrase'
 
-const keyPair = crypto.generateKeyPairSync("rsa", {
+const keyPair = crypto.generateKeyPairSync('rsa', {
   modulusLength: 512 * 8, // 4096 bits
-  publicKeyEncoding: { type: "spki", format: "pem" },
+  publicKeyEncoding: { type: 'spki', format: 'pem' },
   privateKeyEncoding: {
-    type: "pkcs1",
-    format: "pem",
+    type: 'pkcs1',
+    format: 'pem',
     passphrase,
     cipher: Cipher.ALGORITHM.CHACHA_20_POLY,
   },
-});
+})
 ```
 
 ##### Encrypt
 
 ```ts
-const data = "my top-secret data";
+const data = 'my top-secret data'
 /** Store encrypted chunks for next example. */
-const encryptedChunks: Buffer[] = [];
+const encryptedChunks: Buffer[] = []
 
 // Create a `Readable` Stream with raw data.
 const input = new Readable({
   read() {
-    this.push(data); // Push data to encrypt
-    this.push(null); // Signal end of stream
+    this.push(data) // Push data to encrypt
+    this.push(null) // Signal end of stream
   },
-});
+})
 
 // Create a `Writable` Stream where encrypted data is written
 const output = new Writable({
   write(chunk, encoding, callback) {
     // push written chunk to `encryptedChunks` for further usage.
-    encryptedChunks.push(chunk);
-    callback();
+    encryptedChunks.push(chunk)
+    callback()
   },
-});
+})
 
-await Cipher.stream.HybridEncrypt(keyPair.publicKey, { input, output });
+await Cipher.stream.HybridEncrypt(keyPair.publicKey, { input, output })
 ```
 
 ---
@@ -1072,17 +1079,17 @@ await Cipher.stream.HybridEncrypt(keyPair.publicKey, { input, output });
 
 ```ts
 /** Store decrypted chunks. */
-const chunks: Buffer[] = [];
+const chunks: Buffer[] = []
 // Create a `Readable` Stream with encrypted data.
-const input = Readable.from(encryptedChunks);
+const input = Readable.from(encryptedChunks)
 
 // Create a `Writable` Stream where decrypted data is written
 const output = new Writable({
   write(chunk, encoding, callback) {
-    chunks.push(chunk);
-    callback();
+    chunks.push(chunk)
+    callback()
   },
-});
+})
 
 await Cipher.stream.HybridDecrypt(
   {
@@ -1090,9 +1097,9 @@ await Cipher.stream.HybridDecrypt(
     passphrase, // optional passhrase (required if set while generating keypair).
   },
   { input, output },
-);
+)
 
-console.log(Buffer.concat(chunks).toString()); // Outputs: 'my top-secret data'
+console.log(Buffer.concat(chunks).toString()) // Outputs: 'my top-secret data'
 ```
 
 ---
@@ -1104,16 +1111,16 @@ Nothig differs from the [In-memory data stream encryption/decryption](#in-memory
 ##### Encrypt a file
 
 ```ts
-import fs from "fs";
+import fs from 'fs'
 
-const password = "my-very-strong-password";
+const password = 'my-very-strong-password'
 
 // input where raw data to encrypt is read
-const input = fs.createReadStream("my-very-large-top-secret-file.pdf");
+const input = fs.createReadStream('my-very-large-top-secret-file.pdf')
 // output where encrypted data is written
-const output = fs.createWriteStream("my-very-large-top-secret-file.encrypted");
+const output = fs.createWriteStream('my-very-large-top-secret-file.encrypted')
 // encrypt
-await Cipher.stream.Encrypt(password, { input, output });
+await Cipher.stream.Encrypt(password, { input, output })
 ```
 
 ---
@@ -1121,18 +1128,16 @@ await Cipher.stream.Encrypt(password, { input, output });
 ##### Decrypt a file
 
 ```ts
-import fs from "fs";
+import fs from 'fs'
 
-const password = "my-very-strong-password";
+const password = 'my-very-strong-password'
 
 // input where encrypted data is read
-const input = fs.createReadStream("my-very-large-top-secret-file.encrypted");
+const input = fs.createReadStream('my-very-large-top-secret-file.encrypted')
 // output where decrypted data is written
-const output = fs.createWriteStream(
-  "my-very-large-top-secret-file-decrypted.pdf",
-);
+const output = fs.createWriteStream('my-very-large-top-secret-file-decrypted.pdf')
 // decrypt
-await Cipher.stream.Decrypt(password, { input, output });
+await Cipher.stream.Decrypt(password, { input, output })
 ```
 
 ---
@@ -1154,40 +1159,40 @@ Nothig differs from the [In-memory data stream with hybrid encryption/decryption
 ##### Keypair
 
 ```ts
-import { Cipher } from "@alessiofrittoli/crypto-cipher";
+import { Cipher } from '@alessiofrittoli/crypto-cipher'
 
-const keyPair = crypto.generateKeyPairSync("rsa", {
+const keyPair = crypto.generateKeyPairSync('rsa', {
   modulusLength: 512 * 8, // 4096 bits
-  publicKeyEncoding: { type: "spki", format: "pem" },
-  privateKeyEncoding: { type: "pkcs1", format: "pem" },
-});
+  publicKeyEncoding: { type: 'spki', format: 'pem' },
+  privateKeyEncoding: { type: 'pkcs1', format: 'pem' },
+})
 
 // or you can optionally set a custom passphrase
-const passphrase = "custompassphrase";
+const passphrase = 'custompassphrase'
 
-const keyPair = crypto.generateKeyPairSync("rsa", {
+const keyPair = crypto.generateKeyPairSync('rsa', {
   modulusLength: 512 * 8, // 4096 bits
-  publicKeyEncoding: { type: "spki", format: "pem" },
+  publicKeyEncoding: { type: 'spki', format: 'pem' },
   privateKeyEncoding: {
-    type: "pkcs1",
-    format: "pem",
+    type: 'pkcs1',
+    format: 'pem',
     passphrase,
     cipher: Cipher.ALGORITHM.CHACHA_20_POLY,
   },
-});
+})
 ```
 
 ##### Encrypt a file
 
 ```ts
-import fs from "fs";
+import fs from 'fs'
 
 // input where raw data to encrypt is read
-const input = fs.createReadStream("my-very-large-top-secret-file.pdf");
+const input = fs.createReadStream('my-very-large-top-secret-file.pdf')
 // output where encrypted data is written
-const output = fs.createWriteStream("my-very-large-top-secret-file.encrypted");
+const output = fs.createWriteStream('my-very-large-top-secret-file.encrypted')
 // encrypt
-await Cipher.stream.HybridEncrypt(keyPair.publicKey, { input, output });
+await Cipher.stream.HybridEncrypt(keyPair.publicKey, { input, output })
 ```
 
 ---
@@ -1195,14 +1200,12 @@ await Cipher.stream.HybridEncrypt(keyPair.publicKey, { input, output });
 ##### Decrypt a file
 
 ```ts
-import fs from "fs";
+import fs from 'fs'
 
 // input where encrypted data is read
-const input = fs.createReadStream("my-very-large-top-secret-file.encrypted");
+const input = fs.createReadStream('my-very-large-top-secret-file.encrypted')
 // output where decrypted data is written
-const output = fs.createWriteStream(
-  "my-very-large-top-secret-file-decrypted.pdf",
-);
+const output = fs.createWriteStream('my-very-large-top-secret-file-decrypted.pdf')
 // decrypt
 const { decrypt } = await Cipher.stream.HybridDecrypt(
   {
@@ -1210,46 +1213,50 @@ const { decrypt } = await Cipher.stream.HybridDecrypt(
     passphrase, // optional passhrase (required if set while generating keypair).
   },
   { input, output },
-);
+)
 ```
 
 ---
 
 ### Development
 
-#### Install depenendencies
+Run the following to start development
 
-```bash
-npm install
-```
+```shell
+nvm use
 
-or using `pnpm`
-
-```bash
 pnpm i
 ```
 
-#### Build the source code
+#### Local development
 
-Run the following command to test and build code for distribution.
+Run the following
 
-```bash
+```shell
+pnpm dev
+```
+
+This will generate unminified output code, sourcemaps and will enable source file watcher.
+
+---
+
+#### Production build
+
+Run the following to create a local production build
+
+```shell
 pnpm build
 ```
 
-#### [ESLint](https://www.npmjs.com/package/eslint)
+This will generate minified output code without sourcemaps.
 
-warnings / errors check.
+---
 
-```bash
-pnpm lint
-```
-
-#### [Jest](https://npmjs.com/package/jest)
+#### Unit tests
 
 Run all the defined test suites by running the following:
 
-```bash
+```shell
 # Run tests and watch file changes.
 pnpm test:watch
 
@@ -1257,21 +1264,21 @@ pnpm test:watch
 pnpm test:ci
 ```
 
-- See [`package.json`](./package.json) file scripts for more info.
+---
 
-Run tests with coverage.
+##### Run tests with coverage
 
 An HTTP server is then started to serve coverage files from `./coverage` folder.
 
 ⚠️ You may see a blank page the first time you run this command. Simply refresh the browser to see the updates.
 
-```bash
-test:coverage:serve
+```shell
+pnpm test:coverage:serve
 ```
 
 ---
 
-### Contributing
+#### Contributing
 
 Contributions are truly welcome!
 
@@ -1283,7 +1290,7 @@ Help keep this project up to date with [GitHub Sponsor][sponsor-url].
 
 ---
 
-### Security
+#### Security
 
 If you believe you have found a security vulnerability, we encourage you to **_responsibly disclose this and NOT open a public issue_**. We will investigate all legitimate reports. Email `security@alessiofrittoli.it` to disclose any security vulnerabilities.
 

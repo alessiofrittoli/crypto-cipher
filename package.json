@@ -2,6 +2,7 @@
 	"name": "@alessiofrittoli/crypto-cipher",
 	"version": "3.1.0",
 	"description": "Node.js Cipher cryptograph utility library",
+	"type": "module",
 	"author": {
 		"name": "Alessio Frittoli",
 		"email": "info@alessiofrittoli.it",
@@ -37,9 +38,13 @@
 		"type": "git",
 		"url": "git+https://github.com/alessiofrittoli/crypto-cipher.git"
 	},
-	"main": "./dist/index.js",
+	"engines": {
+		"node": ">=24.15.0",
+		"pnpm": ">=11.27.1"
+	},
+	"main": "./dist/index.cjs",
 	"module": "./dist/index.mjs",
-	"types": "./dist/index.d.ts",
+	"types": "./dist/index.d.mts",
 	"files": [
 		"dist"
 	],
@@ -50,16 +55,18 @@
 				"default": "./dist/index.mjs"
 			},
 			"require": {
-				"types": "./dist/index.d.ts",
-				"default": "./dist/index.js"
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
 			}
 		},
-		"./types": {
+		"./*": {
 			"import": {
-				"types": "./dist/types.d.mts"
+				"types": "./dist/*/index.d.mts",
+				"default": "./dist/*/index.mjs"
 			},
 			"require": {
-				"types": "./dist/types.d.ts"
+				"types": "./dist/*/index.d.cts",
+				"default": "./dist/*/index.cjs"
 			}
 		}
 	},
@@ -68,56 +75,43 @@
 		"//1a": "*********************************************************************",
 		"//1b": "******************** DEV - BUILD - LINT - RELEASE *******************",
 		"//1c": "*********************************************************************",
-		"dev": "cross-env NODE_ENV=development tsup --watch",
-		"build:prod": "cross-env NODE_ENV=production tsup",
-		"build": "pnpm lint && pnpm test:ci && pnpm build:prod",
-		"lint": "eslint",
-		"release": "node scripts/release.js --verbose --npm",
+		"dev": "tsdown --watch",
+		"build": "pnpm lint && pnpm tsdown",
+		"lint": "oxlint --report-unused-disable-directives --max-warnings 0",
+		"release": "node scripts/release.ts --verbose --npm",
 		"//2a": "*********************************************************************",
 		"//2b": "***************************** UNIT TESTS ****************************",
 		"//2c": "*********************************************************************",
-		"test": "jest --verbose",
-		"test:watch": "jest --watchAll --verbose",
-		"test:ci": "jest --ci --verbose",
+		"test": "vitest --reporter=tree",
+		"test:watch": "pnpm test watch",
+		"test:ci": "pnpm test run",
 		"//3a": "*********************************************************************",
 		"//3b": "************************ UNIT TESTS COVERAGE ************************",
 		"//3c": "*********************************************************************",
 		"test:coverage": "pnpm test:watch --coverage",
 		"test:coverage:ci": "pnpm test:ci --coverage",
-		"test:serve-coverage": "http-server ./coverage/lcov-report --gzip true -p 0 -o --silent",
-		"test:coverage:serve": "concurrently --prefix none --kill-others \"pnpm test:coverage\" \"pnpm test:serve-coverage\"",
-		"//4a": "*********************************************************************",
-		"//4b": "************************ TARGETED UNIT TESTS ************************",
-		"//4c": "*********************************************************************",
-		"test:buffer-in-memory": "pnpm test:watch buffer-in-memory.test.ts",
-		"test:file-symmetric": "pnpm test:watch file-symmetric.test.ts",
-		"test:file-hybrid": "pnpm test:watch file-hybrid.test.ts",
-		"test:stream-symmetric": "pnpm test:watch stream-symmetric.test.ts",
-		"test:stream-hybrid": "pnpm test:watch stream-hybrid.test.ts",
-		"test:misc": "pnpm test:watch misc.test.ts"
+		"test:serve-coverage": "http-server ./coverage --gzip true -p 0 -o /index.html --silent",
+		"test:coverage:serve": "concurrently --prefix none --kill-others \"pnpm test:coverage\" \"pnpm test:serve-coverage\""
+	},
+	"peerDependencies": {
+		"@alessiofrittoli/crypto-buffer": "^3.12.0",
+		"@alessiofrittoli/math-utils": "^2.2.0",
+		"@alessiofrittoli/stream-reader": "^3.3.0"
 	},
 	"devDependencies": {
-		"@alessiofrittoli/node-scripts": "^3.3.0",
-		"@eslint/js": "^10.0.1",
-		"@jest/globals": "^30.3.0",
-		"@types/jest": "^30.0.0",
-		"@types/node": "^25.5.0",
-		"concurrently": "^9.2.1",
-		"cross-env": "^10.1.0",
-		"dotenv": "^17.3.1",
-		"eslint": "^10.0.3",
-		"globals": "^17.4.0",
-		"http-server": "^14.1.1",
-		"jest": "^30.3.0",
-		"ts-jest": "^29.4.6",
-		"ts-node": "^10.9.2",
-		"tsup": "^8.5.1",
-		"typescript": "^5.9.3",
-		"typescript-eslint": "^8.57.0"
-	},
-	"dependencies": {
-		"@alessiofrittoli/crypto-buffer": "^3.11.0",
-		"@alessiofrittoli/math-utils": "^2.0.0",
-		"@alessiofrittoli/stream-reader": "3.0.0"
+		"@alessiofrittoli/crypto-buffer": "^3.12.0",
+		"@alessiofrittoli/math-utils": "^2.2.0",
+		"@alessiofrittoli/stream-reader": "^3.3.0",
+		"@alessiofrittoli/node-scripts": "^4.2.0",
+		"@alessiofrittoli/package-configs": "^1.9.0",
+		"@types/node": "^24.19.2",
+		"@vitest/coverage-v8": "^5.0.5",
+		"oxlint": "^1.89.0",
+		"oxlint-tsgolint": "^7.0.2005",
+		"prettier": "^3.9.10",
+		"prettier-plugin-sort-imports": "^1.8.11",
+		"tsdown": "^0.23.2",
+		"typescript": "^6.0.3",
+		"vitest": "^5.0.5"
 	}
 }

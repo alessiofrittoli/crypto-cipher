@@ -1,13 +1,37 @@
 {
 	"workbench.colorCustomizations": {
-		"titleBar.activeBackground": "#212121",
+		// title bar
+		"titleBar.activeBackground": "#00000000",
 		"titleBar.border": "#2FED8E",
 		"titleBar.activeForeground": "#F0F0F0",
-		"statusBar.background": "#212121",
-		"statusBar.border":"#2FED8E",
+		// status bar
+		"statusBar.background": "#191919",
+		"statusBar.border": "#2FED8E",
 		"statusBar.foreground": "#F0F0F0",
+		// activity bar
 		"activityBar.activeBorder": "#2FED8E",
-		"activityBarBadge.foreground":"#212121",
-		"activityBarBadge.background":"#2FED8E",
+		"activityBarBadge.foreground": "#212121",
+		"activityBarBadge.background": "#2FED8E",
+		// tab
+		"tab.activeBorderTop": "#2FED8E",
+		// buttons
+		"button.background": "#2FED8E",
+		"button.foreground": "#212121",
+		"button.hoverBackground": "#1FB96C",
+		"button.separator": "#212121",
+		// secondary buttons
+		"button.secondaryBackground": "#00000000",
+		"button.secondaryForeground": "#F0F0F0",
+		"button.secondaryHoverBackground": "#2FED8E20"
 	},
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"files.associations": {
+		".ignore": "ignore",
+		".gitignore": "ignore"
+	},
+	"js/ts.tsdk.path": "node_modules/typescript/lib",
+	"json.schemaDownload.trustedDomains": {
+		"https://raw.githubusercontent.com/DavidAnson/markdownlint/": true
+	}
 }

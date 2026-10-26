@@ -1,0 +1,12 @@
+{
+	"extends": "@alessiofrittoli/package-configs/tsconfig/base.json",
+	"include": ["**/*.ts"],
+	"exclude": ["./dist"],
+	"compilerOptions": {
+		"types": ["node"],
+		"paths": {
+			"@/*": ["./src/*"],
+			"#/*": ["./*"]
+		}
+	}
+}

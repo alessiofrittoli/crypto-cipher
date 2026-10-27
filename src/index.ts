@@ -32,6 +32,15 @@ interface NewKeyIVResult<T extends Cph.ResolvedOptions = Cph.ResolvedOptions> {
 	salt: Buffer<ArrayBuffer>
 }
 
+/**
+ * Cipher class.
+ *
+ * Requires the following packages to be installed:
+ *
+ * - [`@alessiofrittoli/crypto-buffer`](https://npmjs.com/package/@alessiofrittoli/crypto-buffer)
+ * - [`@alessiofrittoli/stream-reader`](https://npmjs.com/package/@alessiofrittoli/stream-reader)
+ * - [`@alessiofrittoli/math-utils`](https://npmjs.com/package/@alessiofrittoli/math-utils)
+ */
 export class Cipher {
 	/**
 	 * Cipher default `salt` lengths.
